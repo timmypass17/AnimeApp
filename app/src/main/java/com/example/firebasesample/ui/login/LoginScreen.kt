@@ -5,21 +5,22 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.firebasesample.SampleScreen
 
 @Composable
 fun LoginBody(
-    onClickLogin: () -> Unit = {},
+    onClickLogin: (email: String, password: String) -> Unit,
     onClickSignUp: () -> Unit = {}
 ) {
     Column(
@@ -29,60 +30,41 @@ fun LoginBody(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        var email by rememberSaveable { mutableStateOf("") }
+        var password by rememberSaveable { mutableStateOf("") }
+
         Text(text = "Login", fontSize = 30.sp)
-        AccountCard()
+
+        /** Login textfields **/
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Enter email") },
+            singleLine = true
+        )
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Enter password") },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+        )
         Spacer(modifier = Modifier.padding(8.dp))
-        LoginButton(onClickLogin = onClickLogin)
+
+        /** Login button**/
+        Button(
+            onClick = { onClickLogin(email, password) }
+        ) {
+            Icon(
+                Icons.Filled.AccountBox,
+                contentDescription = "Favorite",
+                modifier = Modifier.size(ButtonDefaults.IconSize)
+            )
+            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+            Text("Login")
+        }
         Spacer(modifier = Modifier.padding(8.dp))
         SignUpButton(onClickSignUp = onClickSignUp)
-    }
-}
-
-@Composable
-fun AccountCard() {
-    Column() {
-        EmailTextField()
-        PasswordTextField()
-    }
-}
-
-@Composable
-fun EmailTextField() {
-    var email by rememberSaveable { mutableStateOf("") }
-
-    OutlinedTextField(
-        value = email,
-        onValueChange = { email = it },
-        label = { Text("Enter email") },
-        singleLine = true
-    )
-}
-
-@Composable
-fun PasswordTextField() {
-    var password by rememberSaveable { mutableStateOf("") }
-
-    OutlinedTextField(
-        value = password,
-        onValueChange = { password = it },
-        label = { Text("Enter password") },
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-    )
-}
-
-@Composable
-fun LoginButton(onClickLogin: () -> Unit) {
-    Button(
-        onClick = { onClickLogin() }
-    ) {
-        Icon(
-            Icons.Filled.AccountBox,
-            contentDescription = "Favorite",
-            modifier = Modifier.size(ButtonDefaults.IconSize)
-        )
-        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-        Text("Login")
     }
 }
 
@@ -98,5 +80,7 @@ fun SignUpButton(onClickSignUp: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewLoginScreen() {
-    LoginBody()
+    LoginBody(onClickLogin = ::fakeLogin)
 }
+
+fun fakeLogin(fake_email: String, fake_password: String) {}
