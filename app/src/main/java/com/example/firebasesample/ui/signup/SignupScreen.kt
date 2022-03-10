@@ -12,11 +12,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.firebasesample.R
 
 @Composable
 fun SignUpBody(
@@ -50,30 +52,20 @@ fun SignUpBody(
         )
         Spacer(modifier = Modifier.padding(8.dp))
 
-        /** Login button**/
-
-        /** Login button**/
+        /** Sign up button**/
         Button(
-            onClick = { onClickSignUp(email, password) }
+            onClick = { onClickSignUp(email.trim(), password.trim()) },
+            enabled = email.isNotBlank() and password.isNotBlank()
         ) {
             Icon(
-                Icons.Filled.AccountBox,
-                contentDescription = "Favorite",
+                painter = painterResource(R.drawable.ic_signup),
+                contentDescription = "Sign up",
                 modifier = Modifier.size(ButtonDefaults.IconSize)
             )
             Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
             Text("Sign Up")
         }
         Spacer(modifier = Modifier.padding(8.dp))
-    }
-}
-
-@Composable
-fun SignUpButton(onClickSignUp: () -> Unit) {
-    TextButton(
-        onClick = { onClickSignUp() }
-    ) {
-        Text("Sign Up")
     }
 }
 
