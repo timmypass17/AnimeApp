@@ -10,11 +10,6 @@ import com.google.firebase.ktx.Firebase
 
 
 class SignUpViewModel(val auth: FirebaseAuth = Firebase.auth) : ViewModel() {
-//    private val _email = mutableStateOf("")
-//    val email = _email.value
-//
-//    private val _password = mutableStateOf("")
-//    val password = _password.value
 
     fun createAccount(email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)

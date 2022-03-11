@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.firebasesample"
-        minSdk 21
+        minSdk 26 // was 21, changed for Color.valueOf()
         targetSdk 31
         versionCode 1
         versionName "1.0"
@@ -61,7 +61,7 @@ dependencies {
 
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.5.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.0'
 
     // Navigation
     def nav_version = "2.4.1"
@@ -73,4 +73,15 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth-ktx'
     // Also declare the dependency for the Google Play services library and specify its version
     implementation 'com.google.android.gms:play-services-auth:20.1.0'
+
+    // Moshi
+    implementation 'com.squareup.moshi:moshi-kotlin:1.9.3'
+    // Retrofit with Moshi Converter
+    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
+
+    // Coil
+    implementation 'io.coil-kt:coil-compose:1.4.0'
+
+    // Palette
+    implementation 'androidx.palette:palette-ktx:1.0.0'
 }

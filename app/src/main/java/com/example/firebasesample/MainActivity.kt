@@ -19,14 +19,12 @@ import com.example.firebasesample.ui.overview.OverviewViewModel
 import com.example.firebasesample.ui.signup.SignUpBody
 import com.example.firebasesample.ui.signup.SignUpViewModel
 import com.example.firebasesample.ui.theme.FirebaseSampleTheme
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 
 
 // Get context in composable to put firebase stuff inside viewmodel?
 // https://stackoverflow.com/questions/58743541/how-to-get-context-in-jetpack-compose
 const val TAG = "MainActivity"
+
 class MainActivity : ComponentActivity() {
 
     val loginViewModel by viewModels<LoginViewModel>()
@@ -95,17 +93,20 @@ fun FirebaseSampleNavHost(
                 onClickSignUp = { navController.navigate(SampleScreen.SignUp.name) },
                 validEmail = loginViewModel.validEmail,
                 validPassword = loginViewModel.validPassword,
-                errorMessage = loginViewModel.errorMessage
+                errorMessage = loginViewModel.errorMessage,
+                loadingState = loginViewModel.status
             )
         }
         composable(SampleScreen.SignUp.name) {
             SignUpBody(onClickSignUp = signUpViewModel::createAccount)
         }
         composable(SampleScreen.Overview.name) {
-            OverviewBody(onClickLogout = {
-                loginViewModel.signOut() // sign out of firebase
-                navController.navigate(SampleScreen.Login.name)
-            })
+            OverviewBody(
+                onClickLogout = {
+                    loginViewModel.signOut() // sign out of firebase
+                    navController.navigate(SampleScreen.Login.name)},
+                animeData = overviewViewModel.animeData
+            )
         }
     }
 }

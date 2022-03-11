@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.ContentAlpha.medium
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,12 +38,14 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.firebasesample.R
+import com.example.firebasesample.ui.overview.KitsuApiStatus
 import com.example.firebasesample.utli.Constants
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.InternalCoroutinesApi
 
 @Composable
 fun LoginBody(
@@ -48,33 +54,41 @@ fun LoginBody(
     onClickSignUp: () -> Unit,
     validEmail: Boolean,
     validPassword: Boolean,
-    errorMessage: String
+    errorMessage: String?,
+    loadingState: AuthStatus
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    Scaffold(
+        topBar = {
+            if (loadingState == AuthStatus.LOADING) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+        },
+        content = {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-        Text(modifier = Modifier.padding(8.dp), text = "Sign In", fontSize = 30.sp)
+                Text(modifier = Modifier.padding(8.dp), text = "Sign In", fontSize = 30.sp)
+                /** Login user input **/
+                SignInEmailPasswordCard(
+                    onClickLogin = onClickLogin,
+                    validEmail = validEmail,
+                    validPassword = validPassword,
+                    errorMessage = errorMessage)
+                Text(modifier = Modifier.padding(8.dp), text = "or", fontStyle = Italic, color = Color.Gray)
 
-        /** Login user input **/
-        SignInEmailPasswordCard(
-            onClickLogin = onClickLogin,
-            validEmail = validEmail,
-            validPassword = validPassword,
-            errorMessage = errorMessage)
+                /** Google Sign in **/
+                GoogleSignInButton(onClickSignIn = onClickGoogleSignIn)
 
-        Text(modifier = Modifier.padding(8.dp), text = "or", fontStyle = Italic, color = Color.Gray)
-
-        /** Google Sign in **/
-        GoogleSignInButton(onClickSignIn = onClickGoogleSignIn)
-
-        /** SignUp Button **/
-        SignUpButton(onClickSignUp = onClickSignUp)
-    }
+                /** SignUp Button **/
+                SignUpButton(onClickSignUp = onClickSignUp)
+            }
+        }
+    )
 }
 
 @Composable
@@ -82,7 +96,7 @@ fun SignInEmailPasswordCard(
     onClickLogin: (email: String, password: String) -> Unit,
     validEmail: Boolean,
     validPassword: Boolean,
-    errorMessage: String
+    errorMessage: String?
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -93,7 +107,8 @@ fun SignInEmailPasswordCard(
         onValueChange = { email = it },
         label = { Text("Enter email") },
         singleLine = true,
-        isError = !validEmail
+        isError = !validEmail,
+        leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email") }
     )
     OutlinedTextField(
         value = password,
@@ -101,12 +116,13 @@ fun SignInEmailPasswordCard(
         label = { Text("Enter password") },
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        isError = !validPassword
+        isError = !validPassword,
+        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password") }
     )
 
     /** Error Message **/
     if (!validEmail or !validPassword) {
-        Text(modifier = Modifier.padding(8.dp), text = errorMessage, color = MaterialTheme.colors.error)
+        Text(modifier = Modifier.padding(8.dp), text = errorMessage!!, color = MaterialTheme.colors.error)
     } else {
         Spacer(modifier = Modifier.padding(8.dp))
     }
@@ -185,7 +201,8 @@ fun PreviewLoginScreen() {
         validEmail = true,
         validPassword = true,
         errorMessage = "Error Message",
-        onClickGoogleSignIn = ::fakeGoogleLogin
+        onClickGoogleSignIn = ::fakeGoogleLogin,
+        loadingState = AuthStatus.DONE
     )
 }
 
