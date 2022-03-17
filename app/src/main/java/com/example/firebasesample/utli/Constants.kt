@@ -8,7 +8,7 @@ import com.example.firebasesample.R
 
 object Constants {
     val robotoFamily = FontFamily(
-        Font(R.font.roboto_medium, FontWeight.Medium),
+        Font(R.font.roboto_medium, FontWeight.Normal),
         Font(R.font.roboto_thin, FontWeight.Thin)
     )
 }
@@ -40,4 +40,53 @@ enum class Auth(
                 else -> message
             }
     }
+}
+
+fun getSeasonYear(date: String): String {
+    if (date.isEmpty()) {
+        return ""
+    }
+    val date_parts = date.split("-")    // year, month, day
+    val year = date_parts[0]
+    val month = date_parts[1].toInt()
+
+    val season =
+        when(month) {
+            in 3..5 -> "Spring"
+            in 6..8 -> "Summer"
+            in 9..11 -> "Autumn"
+            else -> {
+                "Winter"
+            }
+        }
+
+    return "$season $year"
+}
+fun getMonthDayYear(date: String): String {
+    if (date.isEmpty()) {
+        return ""
+    }
+    val date_parts = date.split("-")
+    val year = date_parts[0]
+    val month_num = date_parts[1]
+    val day = date_parts[2]
+
+    val month =
+        when(month_num) {
+            "01" -> "Jan"
+            "02" -> "Feb"
+            "03" -> "Mar"
+            "04" -> "Apr"
+            "05" -> "May"
+            "06" -> "June"
+            "07" -> "July"
+            "08" -> "Aug"
+            "09" -> "Sept"
+            "10" -> "Oct"
+            "11" -> "Nov"
+            "12" -> "Dec"
+            else -> "month not found"
+        }
+
+    return "$month $day, $year"
 }

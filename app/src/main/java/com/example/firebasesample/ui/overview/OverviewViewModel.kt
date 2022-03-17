@@ -1,61 +1,64 @@
 package com.example.firebasesample.ui.overview
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.palette.graphics.Palette
 import com.example.firebasesample.data.models.Anime
 import com.example.firebasesample.data.network.KitsuApi
 import kotlinx.coroutines.launch
-import androidx.compose.ui.graphics.Color
-import coil.ImageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
-import retrofit2.http.Url
 
 enum class KitsuApiStatus { LOADING, ERROR, DONE }
 
 class OverviewViewModel() : ViewModel() {
 
-    var animeData: MutableMap<String, List<Anime>> by mutableStateOf(mutableMapOf())
+    // [("Title", "One piece..")..]
+    val defaultAnimeData: List<Pair<String, MutableList<Anime>>> =
+        listOf(
+            Pair("Trending Anime", mutableListOf()),
+            Pair("Top Anime", mutableListOf())
+        )
+    var animeData: List<Pair<String, MutableList<Anime>>> by mutableStateOf(defaultAnimeData)
     var errorMessage: String by mutableStateOf("")
-    var status: KitsuApiStatus by mutableStateOf(KitsuApiStatus.DONE)
+    var trending_status: KitsuApiStatus by mutableStateOf(KitsuApiStatus.DONE)
+    var top_status: KitsuApiStatus by mutableStateOf(KitsuApiStatus.DONE)
 
     init {
-        animeData["trending"] = listOf()
-        fetchTrendingAnimeData()
+        getTrendingAnimes()
+        getTopAnimes()
     }
 
-    fun fetchTrendingAnimeData() {
-        status = KitsuApiStatus.LOADING
+    fun getTrendingAnimes() {
+        trending_status = KitsuApiStatus.LOADING
         try {
             viewModelScope.launch {
-                animeData["trending"] = KitsuApi.retrofitService.getTrendingAnimeData().data
-                status = KitsuApiStatus.DONE
+                animeData[0].second.addAll(KitsuApi.retrofitService.getTrendingAnimeData().data)
+                trending_status = KitsuApiStatus.DONE
                 Log.i("OverviewModel", "Got trending anime")
             }
         } catch (e: Exception) {
-            animeData["trending"] = listOf()
+            animeData[0].second.addAll(mutableListOf())
             errorMessage = e.message.toString()
-            status = KitsuApiStatus.ERROR
+            trending_status = KitsuApiStatus.ERROR
             Log.i("OverviewModel", "Did not get trending anime")
-
         }
     }
 
-    suspend fun getBitmap(url: String, context: Context): Bitmap {
-        val loader = ImageLoader(context)
-        val request = ImageRequest.Builder(context)
-            .data(url) // demo link
-            .build()
-        val result = (loader.execute(request) as SuccessResult).drawable
-        return (result as BitmapDrawable).bitmap
+    fun getTopAnimes() {
+        top_status = KitsuApiStatus.LOADING
+        try {
+            viewModelScope.launch {
+                animeData[1].second.addAll(KitsuApi.retrofitService.getPopularAnimeData().data)
+                top_status = KitsuApiStatus.DONE
+                Log.i("OverviewModel", "Got popular anime")
+            }
+        } catch (e: Exception) {
+            animeData[1].second.addAll(mutableListOf())
+            errorMessage = e.message.toString()
+            top_status = KitsuApiStatus.ERROR
+            Log.i("OverviewModel", "Did not get popular anime")
+        }
     }
 }

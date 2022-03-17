@@ -1,47 +1,71 @@
 package com.example.firebasesample.data.models
 
+import android.util.Log
+
 data class AnimeResponse(
     val data: List<Anime>
 )
 
 data class Anime(
+    val id: String,
     val type: String,
     val attributes: AnimeAttributes
-)
+) {
+    constructor() : this (
+        id = "",
+        type = "",
+        attributes = AnimeAttributes(
+            canonicalTitle = "",
+            synopsis = "",
+            posterImage = AnimePoster(),
+            coverImage = AnimeCover(),
+            episodeCount = "",
+            startDate = "",
+            endDate = "",
+            youtubeVideoId = ""
+        )
+    )
+}
 
 data class AnimeAttributes(
     val canonicalTitle: String,
     val synopsis: String,
     val posterImage: AnimePoster,
     val coverImage: AnimeCover,
-    val episodeCount: String?,
-    val startDate: String
+    val episodeCount: String?,  // null if series is ongoing
+    var startDate: String,
+    var endDate: String?, // // null if series is ongoing
+    val youtubeVideoId: String
 ) {
-    companion object {
-        fun getSeasonYear(startDate: String): String {
-            val date_parts = startDate.split("-")
-            val year = date_parts[0]
-            val month = date_parts[1].toInt()
-
-            val season =
-                when(month) {
-                    in 3..5 -> "Spring"
-                    in 6..8 -> "Summer"
-                    in 9..11 -> "Autumn"
-                    else -> {
-                        "Winter"
-                    }
-            }
-
-            return "$season $year"
-        }
-    }
+    constructor() : this (
+        canonicalTitle = "",
+        synopsis = "",
+        posterImage = AnimePoster(""),
+        coverImage = AnimeCover(""),
+        episodeCount = "",
+        startDate = "",
+        endDate = "",
+        youtubeVideoId = ""
+    )
 }
 
 data class AnimePoster(
-    val tiny: String
-)
+    val small: String
+) {
+    constructor() : this (
+        small = ""
+    )
+}
 
 data class AnimeCover(
-    val tiny: String
+    val small: String
+) {
+    constructor() : this (
+        small = ""
+    )
+}
+
+/** Single Anime Response **/
+data class SingleAnimeResponse(
+    val data: Anime
 )

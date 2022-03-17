@@ -2,6 +2,21 @@
 <resources>
 
     <style name="Theme.FirebaseSample" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/purple_700</item>
+<!--        <item name="android:windowTranslucentStatus">true</item>-->
+<!--        <item name="android:fitsSystemWindows">true</item>-->
+
+<!--        <item name="android:navigationBarColor">-->
+<!--            @android:color/transparent-->
+<!--        </item>-->
+
+<!--        &lt;!&ndash; Optional: set to transparent if your app is drawing behind the status bar. &ndash;&gt;-->
+<!--        <item name="android:statusBarColor">-->
+<!--            @android:color/transparent-->
+<!--        </item>-->
+
+<!--        &lt;!&ndash; Optional: set the status bar light and content dark. &ndash;&gt;-->
+<!--        <item name="android:windowLightStatusBar">-->
+<!--            true-->
+<!--        </item>-->
     </style>
 </resources>

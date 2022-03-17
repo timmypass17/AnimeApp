@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import com.example.firebasesample.R
 import com.example.firebasesample.ui.overview.KitsuApiStatus
 import com.example.firebasesample.utli.Constants
+import com.google.accompanist.systemuicontroller.SystemUiController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
