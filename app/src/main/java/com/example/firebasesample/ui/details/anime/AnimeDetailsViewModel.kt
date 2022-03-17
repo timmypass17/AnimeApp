@@ -17,26 +17,26 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
 enum class KitsuApiStatus { LOADING, ERROR, DONE }
-val dummyAnime: Anime = Anime("", "", AnimeAttributes("","", AnimePoster(""), AnimeCover(""), "", "", "", ""))
+//val dummyAnime: Anime = Anime("", "", AnimeAttributes("","", AnimePoster(""), AnimeCover(""), "", "", "", ""))
 val TAG = "AnimeDetailsViewModel"
 class AnimeDetailsViewModel() : ViewModel() {
 
-    var anime: Anime by mutableStateOf(dummyAnime.copy())
+    // If these states change, then composable recomposes too (same for remember)
+    var anime: Anime by mutableStateOf(Anime())
+    var isFavorited: Boolean by mutableStateOf( false)
     var status: KitsuApiStatus by mutableStateOf(KitsuApiStatus.DONE)
 
     fun getAnime(id: String) {
-        Log.i(TAG, "Attempting to get anime!")
         status = KitsuApiStatus.LOADING
         try {
             viewModelScope.launch {
                 anime = KitsuApi.retrofitService.getAnime(id).data
-                Log.i(TAG, "Got anime! $anime")
+                checkForFavorited(anime.id) // check if anime is favorited
                 status = KitsuApiStatus.DONE
             }
         } catch (e: Exception) {
-            anime = dummyAnime.copy()
+            anime = Anime()
             status = KitsuApiStatus.ERROR
-            Log.i(TAG, "Did not get anime")
         }
     }
 
@@ -52,18 +52,51 @@ class AnimeDetailsViewModel() : ViewModel() {
                 // Update favorites
                 val userDocument = documentSnapshot.toObject<User>()
                 val currentFavorites = userDocument?.animeFavorites
-//                val animeToAdd = FireBaseAnime(
-//                    name = anime.attributes.canonicalTitle,
-//                    posterUrl = anime.attributes.posterImage.small
-//                )
                 currentFavorites?.put(anime.id, anime)
-
+                isFavorited = true
                 docRef
                     .update("animeFavorites", currentFavorites)
-                    .addOnSuccessListener { Log.i(TAG, "Updated anime favorites!") }
-                    .addOnFailureListener { Log.w(TAG, "Fail to update anime favorites :(") }
+                    .addOnSuccessListener { Log.i(TAG, "Added anime ${anime.attributes.canonicalTitle} to favorites!") }
+                    .addOnFailureListener { Log.w(TAG, "Fail to add to favorites") }
             }
             .addOnFailureListener {  }
+    }
 
+    fun removeFromFavorites(animeId: String) {
+        val db = Firebase.firestore
+        val user = Firebase.auth.currentUser
+        val docRef = db.document("users/${user?.uid}") // get current user path
+        // Get current favorites
+        docRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                // Update favorites
+                val userDocument = documentSnapshot.toObject<User>()
+                val currentFavorites = userDocument?.animeFavorites
+                currentFavorites?.remove(animeId)
+                isFavorited = false
+                docRef
+                    .update("animeFavorites", currentFavorites)
+                    .addOnSuccessListener { Log.i(TAG, "Removed anime $animeId from favorites") }
+                    .addOnFailureListener { Log.w(TAG, "Fail to remove anime $animeId from favorites") }
+            }
+            .addOnFailureListener {  }
+    }
+
+    fun checkForFavorited(animeId: String) {
+        Log.i("AnimeDetailsViewModel", "Checking for $animeId")
+        val db = Firebase.firestore
+        val docRef = db.document("users/${Firebase.auth.currentUser?.uid}")
+        docRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val user = documentSnapshot.toObject<User>() ?: User()
+                    val animeFavorites = user.animeFavorites
+                    isFavorited = animeFavorites.containsKey(animeId)
+                    Log.i("AnimeDetailsViewModel", "$animeId is $isFavorited")
+                }
+            }
+            .addOnFailureListener { e -> }
     }
 }

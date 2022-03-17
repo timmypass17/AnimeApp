@@ -151,13 +151,13 @@ fun FirebaseSampleNavHost(
             )
         ) { entry ->
             val id = entry.arguments?.getString("animeId")
-            if (id != null) {
-                animeDetailsViewModel.getAnime(id)
-            }
+            animeDetailsViewModel.getAnime(id!!)
+
             AnimeDetailsBody(
                 anime = animeDetailsViewModel.anime,
-                isFavorited = profileViewModel::isFavorited,
+                isFavorited = animeDetailsViewModel.isFavorited,
                 onClickFavorite = animeDetailsViewModel::addtoFavorites,
+                onClickRemoveFavorite = animeDetailsViewModel::removeFromFavorites,
                 onClickBack = {
                     navController.navigate(SampleScreen.Overview.name) {
                         popUpTo(SampleScreen.Overview.name) { inclusive = true } // pop off everything up to overview screen

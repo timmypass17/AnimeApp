@@ -16,7 +16,7 @@ import com.google.firebase.ktx.Firebase
 private const val TAG = "ProfileViewModel"
 class ProfileViewModel(): ViewModel() {
 
-    var user: User by mutableStateOf(User()) // default user
+    var user: User by mutableStateOf(User()) // fetch user data from firebase and put here
     var animeFavorites: MutableMap<String, Anime> by mutableStateOf(mutableMapOf())
 
     fun getCurrentUser() {
@@ -38,7 +38,6 @@ class ProfileViewModel(): ViewModel() {
             }
     }
 
-    fun isFavorited(animeId: String): Boolean {
-        return user.animeFavorites.containsKey(animeId)
-    }
+    fun isFavorited(animeId: String) = user.animeFavorites.containsKey(animeId)
+
 }

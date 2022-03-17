@@ -1,5 +1,6 @@
 package com.example.firebasesample.ui.details.anime
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,10 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.firebasesample.R
 import com.example.firebasesample.data.models.Anime
 import com.example.firebasesample.utli.getMonthDayYear
 import com.example.firebasesample.utli.getSeasonYear
@@ -34,8 +37,9 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 @ExperimentalMaterialApi
 fun AnimeDetailsBody(
     anime: Anime,
-    isFavorited: (String) -> Boolean,
+    isFavorited: Boolean,
     onClickFavorite: (Anime) -> Unit,
+    onClickRemoveFavorite: (String) -> Unit,
     onClickBack: () -> Unit
 ) {
     val systemUiController = rememberSystemUiController()   // Status bar black
@@ -48,13 +52,23 @@ fun AnimeDetailsBody(
     }
     LazyColumn {
         items(listOf(anime)) { anime ->
-            AnimeDetail(anime, isFavorited = isFavorited, onClickFavorite = onClickFavorite)
+            AnimeDetail(
+                anime = anime,
+                isFavorited = isFavorited,
+                onClickFavorite = onClickFavorite,
+                onClickRemoveFavorite = onClickRemoveFavorite
+            )
         }
     }
 }
 
 @Composable
-fun AnimeDetail(anime: Anime, isFavorited: (String) -> Boolean, onClickFavorite: (Anime) -> Unit) {
+fun AnimeDetail(
+    anime: Anime,
+    isFavorited: Boolean,
+    onClickFavorite: (Anime) -> Unit,
+    onClickRemoveFavorite: (String) -> Unit
+) {
     AsyncImage(
         model = anime.attributes.coverImage.small,
         contentDescription = null,
@@ -69,7 +83,8 @@ fun AnimeDetail(anime: Anime, isFavorited: (String) -> Boolean, onClickFavorite:
         AnimeHeading(
             anime = anime,
             isFavorited = isFavorited,
-            onClickFavorite = onClickFavorite
+            onClickFavorite = onClickFavorite,
+            onClickRemoveFavorite = onClickRemoveFavorite
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
@@ -80,8 +95,10 @@ fun AnimeDetail(anime: Anime, isFavorited: (String) -> Boolean, onClickFavorite:
 @Composable
 fun AnimeHeading(
     anime: Anime,
-    isFavorited: (String) -> Boolean,
-    onClickFavorite: (Anime) -> Unit) {
+    isFavorited: Boolean,
+    onClickFavorite: (Anime) -> Unit,
+    onClickRemoveFavorite: (String) -> Unit
+) {
     Row {
         Column(modifier = Modifier.weight(3f)) {
             Text(anime.attributes.canonicalTitle)
@@ -97,11 +114,18 @@ fun AnimeHeading(
             horizontalAlignment = Alignment.End
         ) {
             Icon(
-                if (isFavorited(anime.id)) { Icons.Default.Favorite}
-                else { Icons.Default.FavoriteBorder },
-                "Favorite",
-                modifier = Modifier.padding(8.dp)
-                    .clickable { onClickFavorite(anime) }
+                imageVector = if (isFavorited) { Icons.Default.Favorite} else { Icons.Default.FavoriteBorder },
+                contentDescription = "Favorite",
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable {
+                        if (isFavorited) {
+                            onClickRemoveFavorite(anime.id)
+                        } else {
+                            onClickFavorite(anime)
+                        }
+                    },
+                tint = colorResource(R.color.favorite)
             )
         }
     }
