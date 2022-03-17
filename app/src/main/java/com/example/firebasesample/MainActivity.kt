@@ -156,6 +156,7 @@ fun FirebaseSampleNavHost(
             }
             AnimeDetailsBody(
                 anime = animeDetailsViewModel.anime,
+                isFavorited = profileViewModel::isFavorited,
                 onClickFavorite = animeDetailsViewModel::addtoFavorites,
                 onClickBack = {
                     navController.navigate(SampleScreen.Overview.name) {
@@ -166,9 +167,13 @@ fun FirebaseSampleNavHost(
         }
 
         composable(SampleScreen.Profile.name) {
+            // When user presses profile screen, get fresh user data
+            profileViewModel.getCurrentUser()
+            Log.i(TAG, "Getting user data")
+
             ProfileBody(
-                getUserData = profileViewModel::getCurrentUser,
                 user = profileViewModel.user,
+                animeFavorites = profileViewModel.animeFavorites,
                 onClickAnime = { anime ->
                     navController.navigate("AnimeDetails/${anime.id}")
                 },

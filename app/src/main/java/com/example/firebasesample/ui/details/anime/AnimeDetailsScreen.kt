@@ -10,7 +10,11 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -30,6 +34,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 @ExperimentalMaterialApi
 fun AnimeDetailsBody(
     anime: Anime,
+    isFavorited: (String) -> Boolean,
     onClickFavorite: (Anime) -> Unit,
     onClickBack: () -> Unit
 ) {
@@ -41,16 +46,15 @@ fun AnimeDetailsBody(
             color = Color.Black
         )
     }
-    val scrollState = rememberScrollState()
     LazyColumn {
         items(listOf(anime)) { anime ->
-            AnimeDetail(anime, onClickFavorite = onClickFavorite)
+            AnimeDetail(anime, isFavorited = isFavorited, onClickFavorite = onClickFavorite)
         }
     }
 }
 
 @Composable
-fun AnimeDetail(anime: Anime, onClickFavorite: (Anime) -> Unit) {
+fun AnimeDetail(anime: Anime, isFavorited: (String) -> Boolean, onClickFavorite: (Anime) -> Unit) {
     AsyncImage(
         model = anime.attributes.coverImage.small,
         contentDescription = null,
@@ -64,38 +68,37 @@ fun AnimeDetail(anime: Anime, onClickFavorite: (Anime) -> Unit) {
     ) {
         AnimeHeading(
             anime = anime,
-            id = anime.id,
-            title = anime.attributes.canonicalTitle,
-            season = getSeasonYear(anime.attributes.startDate),
-            releaseDate = getMonthDayYear(anime.attributes.startDate),
-            endDate = if (anime.attributes.endDate != null) getMonthDayYear(anime.attributes.endDate!!) else "Ongoing",
+            isFavorited = isFavorited,
             onClickFavorite = onClickFavorite
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
         AnimeSynopsis(synopsis = anime.attributes.synopsis)
-        // Use exoplayer
     }
 }
 
 @Composable
-fun AnimeHeading(anime: Anime, id: String, title: String, season: String, releaseDate: String, endDate: String,
+fun AnimeHeading(
+    anime: Anime,
+    isFavorited: (String) -> Boolean,
     onClickFavorite: (Anime) -> Unit) {
     Row {
         Column(modifier = Modifier.weight(3f)) {
-            Text(title)
-            Text(season)
+            Text(anime.attributes.canonicalTitle)
+            Text(getSeasonYear(anime.attributes.startDate))
             Row {
-                Text(releaseDate)
+                Text(getMonthDayYear(anime.attributes.startDate))
                 Text(" - ")
-                Text(endDate)
+                Text(if (anime.attributes.endDate != null) getMonthDayYear(anime.attributes.endDate!!) else "Ongoing")
             }
         }
         Column(
             modifier = Modifier.weight(2f),
             horizontalAlignment = Alignment.End
         ) {
-            Icon(Icons.Default.Favorite,
+            Icon(
+                if (isFavorited(anime.id)) { Icons.Default.Favorite}
+                else { Icons.Default.FavoriteBorder },
                 "Favorite",
                 modifier = Modifier.padding(8.dp)
                     .clickable { onClickFavorite(anime) }

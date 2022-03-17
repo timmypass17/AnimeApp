@@ -1,10 +1,10 @@
 package com.example.firebasesample.ui.profile
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModel
+import com.example.firebasesample.data.models.Anime
 import com.example.firebasesample.data.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -17,27 +17,28 @@ private const val TAG = "ProfileViewModel"
 class ProfileViewModel(): ViewModel() {
 
     var user: User by mutableStateOf(User()) // default user
-
-    init {
-//        getCurrentUser()
-    }
+    var animeFavorites: MutableMap<String, Anime> by mutableStateOf(mutableMapOf())
 
     fun getCurrentUser() {
+        // Check if user already in firestore
+        Log.i(TAG, "getting user data")
         val db = Firebase.firestore
         val docRef = db.document("users/${Firebase.auth.currentUser?.uid}")
-        Log.d(TAG, "Doing firebase stuff")
-
-        // Check if user already in firestore
         docRef
             .get()
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot.exists()) {
                     user = documentSnapshot.toObject<User>() ?: User()
+                    animeFavorites = user.animeFavorites
                     Log.i(TAG, "Document Exists: $documentSnapshot")
                 }
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Document not found: $e")
             }
+    }
+
+    fun isFavorited(animeId: String): Boolean {
+        return user.animeFavorites.containsKey(animeId)
     }
 }
