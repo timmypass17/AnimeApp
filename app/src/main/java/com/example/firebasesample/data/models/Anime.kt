@@ -1,71 +1,67 @@
 package com.example.firebasesample.data.models
 
-import android.util.Log
-
-data class AnimeResponse(
-    val data: List<Anime>
+data class AnimePosterResponse(
+    val data: List<AnimePosterNode>
 )
 
-data class Anime(
+data class AnimePosterNode(
+    val node: AnimePoster
+) {
+    constructor() : this (
+        node = AnimePoster()
+            )
+}
+
+// AnimePoster objects contains only partial info to display an anime
+data class AnimePoster(
     val id: String,
-    val type: String,
-    val attributes: AnimeAttributes
+    val title: String,
+    val main_picture: AnimePicture,
+    val num_episodes: String?,
+    val start_season: AnimeSeason
 ) {
     constructor() : this (
         id = "",
-        type = "",
-        attributes = AnimeAttributes(
-            canonicalTitle = "",
-            synopsis = "",
-            posterImage = AnimePoster(),
-            coverImage = AnimeCover(),
-            episodeCount = "",
-            startDate = "",
-            endDate = "",
-            youtubeVideoId = ""
-        )
+        title = "",
+        main_picture = AnimePicture(),
+        num_episodes = "",
+        start_season = AnimeSeason()
+            )
+}
+
+data class AnimePicture(
+    val medium: String
+) {
+    constructor() : this (
+        medium = ""
+            )
+}
+
+data class AnimeSeason(
+    val year: String,
+    val season: String
+) {
+    constructor() : this (
+        year = "",
+        season = ""
     )
 }
 
-data class AnimeAttributes(
-    val canonicalTitle: String,
+// Full anime object
+data class Anime(
+    val id: String,
+    val title: String,
+    val main_picture: AnimePicture,
+    val start_season: AnimeSeason,
     val synopsis: String,
-    val posterImage: AnimePoster,
-    val coverImage: AnimeCover,
-    val episodeCount: String?,  // null if series is ongoing
-    var startDate: String,
-    var endDate: String?, // // null if series is ongoing
-    val youtubeVideoId: String
+    val num_episodes: String?
 ) {
     constructor() : this (
-        canonicalTitle = "",
+        id = "",
+        title = "",
+        main_picture = AnimePicture(""),
+        start_season = AnimeSeason("", ""),
         synopsis = "",
-        posterImage = AnimePoster(""),
-        coverImage = AnimeCover(""),
-        episodeCount = "",
-        startDate = "",
-        endDate = "",
-        youtubeVideoId = ""
+        num_episodes = ""
     )
 }
-
-data class AnimePoster(
-    val small: String
-) {
-    constructor() : this (
-        small = ""
-    )
-}
-
-data class AnimeCover(
-    val small: String
-) {
-    constructor() : this (
-        small = ""
-    )
-}
-
-/** Single Anime Response **/
-data class SingleAnimeResponse(
-    val data: Anime
-)

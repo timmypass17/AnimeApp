@@ -6,58 +6,42 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.firebasesample.data.models.Anime
-import com.example.firebasesample.data.network.KitsuApi
+import com.example.firebasesample.data.models.AnimePosterNode
+import com.example.firebasesample.data.network.MalApi
+import com.example.firebasesample.data.network.MalApiStatus
 import kotlinx.coroutines.launch
-
-enum class KitsuApiStatus { LOADING, ERROR, DONE }
 
 class OverviewViewModel() : ViewModel() {
 
-    // [("Title", "One piece..")..]
-    val defaultAnimeData: List<Pair<String, MutableList<Anime>>> =
+    val defaultAnimeData: List<Pair<String, MutableList<AnimePosterNode>>> =
         listOf(
-            Pair("Trending Anime", mutableListOf()),
             Pair("Top Anime", mutableListOf())
         )
-    var animeData: List<Pair<String, MutableList<Anime>>> by mutableStateOf(defaultAnimeData)
+    var animeData: List<Pair<String, MutableList<AnimePosterNode>>> by mutableStateOf(defaultAnimeData)
     var errorMessage: String by mutableStateOf("")
-    var trending_status: KitsuApiStatus by mutableStateOf(KitsuApiStatus.DONE)
-    var top_status: KitsuApiStatus by mutableStateOf(KitsuApiStatus.DONE)
+
+    var top_status: MalApiStatus by mutableStateOf(MalApiStatus.DONE)
 
     init {
-        getTrendingAnimes()
         getTopAnimes()
     }
 
-    fun getTrendingAnimes() {
-        trending_status = KitsuApiStatus.LOADING
+    fun getTopAnimes() {
+        top_status = MalApiStatus.LOADING
         try {
             viewModelScope.launch {
-                animeData[0].second.addAll(KitsuApi.retrofitService.getTrendingAnimeData().data)
-                trending_status = KitsuApiStatus.DONE
-                Log.i("OverviewModel", "Got trending anime")
+                animeData[0].second.addAll(MalApi.retrofitService.getTopRankingAnimeData(
+                    ranking = "all",
+                    limit = 4,
+                    fields = "title,main_picture,num_episodes,start_season"
+                ).data)
+                top_status = MalApiStatus.DONE
+                Log.i("OverviewModel", "Got popular anime")
             }
         } catch (e: Exception) {
             animeData[0].second.addAll(mutableListOf())
             errorMessage = e.message.toString()
-            trending_status = KitsuApiStatus.ERROR
-            Log.i("OverviewModel", "Did not get trending anime")
-        }
-    }
-
-    fun getTopAnimes() {
-        top_status = KitsuApiStatus.LOADING
-        try {
-            viewModelScope.launch {
-                animeData[1].second.addAll(KitsuApi.retrofitService.getPopularAnimeData().data)
-                top_status = KitsuApiStatus.DONE
-                Log.i("OverviewModel", "Got popular anime")
-            }
-        } catch (e: Exception) {
-            animeData[1].second.addAll(mutableListOf())
-            errorMessage = e.message.toString()
-            top_status = KitsuApiStatus.ERROR
+            top_status = MalApiStatus.ERROR
             Log.i("OverviewModel", "Did not get popular anime")
         }
     }

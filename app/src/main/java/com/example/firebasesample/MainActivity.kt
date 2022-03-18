@@ -136,7 +136,7 @@ fun FirebaseSampleNavHost(
             OverviewBody(
                 animeData = overviewViewModel.animeData,
                 onClickAnime = { anime ->
-                    navController.navigate("AnimeDetails/${anime.id}")
+                    navController.navigate("AnimeDetails/${anime.node.id}")
                 }
             )
         }
@@ -158,6 +158,7 @@ fun FirebaseSampleNavHost(
                 isFavorited = animeDetailsViewModel.isFavorited,
                 onClickFavorite = animeDetailsViewModel::addtoFavorites,
                 onClickRemoveFavorite = animeDetailsViewModel::removeFromFavorites,
+                status = animeDetailsViewModel.status,
                 onClickBack = {
                     navController.navigate(SampleScreen.Overview.name) {
                         popUpTo(SampleScreen.Overview.name) { inclusive = true } // pop off everything up to overview screen
@@ -175,7 +176,7 @@ fun FirebaseSampleNavHost(
                 user = profileViewModel.user,
                 animeFavorites = profileViewModel.animeFavorites,
                 onClickAnime = { anime ->
-                    navController.navigate("AnimeDetails/${anime.id}")
+                    navController.navigate("AnimeDetails/${anime.node.id}")
                 },
                 onClickLogout = {
                     loginViewModel.signOut() // sign out of firebase

@@ -5,14 +5,7 @@ data class User(
     val uid: String,
     val username: String,
     val profileImage: String,
-    val animeFavorites: MutableMap<String, Anime>
+    val animeFavorites: MutableMap<String, AnimePosterNode>
 ) {
     constructor() : this (uid = "", username = "", profileImage = "", animeFavorites = mutableMapOf())
-}
-
-class FireBaseAnime(
-    val name: String,
-    val posterUrl: String,
-) {
-    constructor() : this (name = "", posterUrl = "")
 }

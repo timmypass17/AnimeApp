@@ -7,36 +7,36 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.firebasesample.data.models.*
-import com.example.firebasesample.data.network.KitsuApi
-import com.example.firebasesample.ui.overview.KitsuApiStatus
+import com.example.firebasesample.data.network.MalApi
+import com.example.firebasesample.data.network.MalApiStatus
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.getField
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
-enum class KitsuApiStatus { LOADING, ERROR, DONE }
-//val dummyAnime: Anime = Anime("", "", AnimeAttributes("","", AnimePoster(""), AnimeCover(""), "", "", "", ""))
 val TAG = "AnimeDetailsViewModel"
 class AnimeDetailsViewModel() : ViewModel() {
 
     // If these states change, then composable recomposes too (same for remember)
     var anime: Anime by mutableStateOf(Anime())
     var isFavorited: Boolean by mutableStateOf( false)
-    var status: KitsuApiStatus by mutableStateOf(KitsuApiStatus.DONE)
+    var status: MalApiStatus by mutableStateOf(MalApiStatus.DONE)
 
     fun getAnime(id: String) {
-        status = KitsuApiStatus.LOADING
+        status = MalApiStatus.LOADING
         try {
             viewModelScope.launch {
-                anime = KitsuApi.retrofitService.getAnime(id).data
+                anime = MalApi.retrofitService.getAnime(
+                    query = id,
+                    fields = "id,title,main_picture,start_season,synopsis"
+                )
                 checkForFavorited(anime.id) // check if anime is favorited
-                status = KitsuApiStatus.DONE
+                status = MalApiStatus.DONE
             }
         } catch (e: Exception) {
             anime = Anime()
-            status = KitsuApiStatus.ERROR
+            status = MalApiStatus.ERROR
         }
     }
 
@@ -52,11 +52,20 @@ class AnimeDetailsViewModel() : ViewModel() {
                 // Update favorites
                 val userDocument = documentSnapshot.toObject<User>()
                 val currentFavorites = userDocument?.animeFavorites
-                currentFavorites?.put(anime.id, anime)
+                val animeToAdd = AnimePosterNode(
+                    node = AnimePoster(
+                        id = anime.id,
+                        title = anime.title,
+                        main_picture = AnimePicture(anime.main_picture.medium),
+                        num_episodes = anime.num_episodes,
+                        start_season = AnimeSeason(year = anime.start_season.year, season = anime.start_season.season)
+                    )
+                )
+                currentFavorites?.put(anime.id, animeToAdd)
                 isFavorited = true
                 docRef
                     .update("animeFavorites", currentFavorites)
-                    .addOnSuccessListener { Log.i(TAG, "Added anime ${anime.attributes.canonicalTitle} to favorites!") }
+                    .addOnSuccessListener { Log.i(TAG, "Added anime ${anime.title} to favorites!") }
                     .addOnFailureListener { Log.w(TAG, "Fail to add to favorites") }
             }
             .addOnFailureListener {  }

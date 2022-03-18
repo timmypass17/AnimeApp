@@ -5,6 +5,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModel
 import com.example.firebasesample.data.models.Anime
+import com.example.firebasesample.data.models.AnimePosterNode
 import com.example.firebasesample.data.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -17,7 +18,7 @@ private const val TAG = "ProfileViewModel"
 class ProfileViewModel(): ViewModel() {
 
     var user: User by mutableStateOf(User()) // fetch user data from firebase and put here
-    var animeFavorites: MutableMap<String, Anime> by mutableStateOf(mutableMapOf())
+    var animeFavorites: MutableMap<String, AnimePosterNode> by mutableStateOf(mutableMapOf())
 
     fun getCurrentUser() {
         // Check if user already in firestore

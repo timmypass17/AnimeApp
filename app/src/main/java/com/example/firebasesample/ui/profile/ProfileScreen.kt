@@ -23,7 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.firebasesample.data.models.Anime
+import com.example.firebasesample.data.models.AnimePosterNode
 import com.example.firebasesample.data.models.User
 import com.example.firebasesample.ui.overview.AnimeItem
 
@@ -31,8 +31,8 @@ import com.example.firebasesample.ui.overview.AnimeItem
 @Composable
 fun ProfileBody(
     user: User,
-    animeFavorites: MutableMap<String, Anime>,
-    onClickAnime: (Anime) -> Unit,
+    animeFavorites: MutableMap<String, AnimePosterNode>,
+    onClickAnime: (AnimePosterNode) -> Unit,
     onClickLogout: () -> Unit,
     ) {
     Log.i("ProfileScreen", animeFavorites.toString())

@@ -30,26 +30,22 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.example.firebasesample.R
-import com.example.firebasesample.data.models.Anime
+import com.example.firebasesample.data.models.AnimePosterNode
 import com.example.firebasesample.utli.Constants
-import com.example.firebasesample.utli.getSeasonYear
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
 // Top app bar: https://developer.android.com/reference/kotlin/androidx/compose/material/package-summary#TopAppBar(kotlin.Function0,androidx.compose.ui.Modifier,kotlin.Function0,kotlin.Function1,androidx.compose.ui.graphics.Color,androidx.compose.ui.graphics.Color,androidx.compose.ui.unit.Dp)
 @Composable
 fun OverviewBody(
-    animeData: List<Pair<String, MutableList<Anime>>>,
-    onClickAnime: (Anime) -> Unit
-    //    overviewTabRow: @Composable () -> Unit,
+    animeData: List<Pair<String, MutableList<AnimePosterNode>>>,
+    onClickAnime: (AnimePosterNode) -> Unit
     ) {
 
     val systemUiController = rememberSystemUiController()   // Status bar black
 
     val useDarkIcons = MaterialTheme.colors.isLight
     SideEffect {
-        // Update all of the system bar colors to be transparent, and use
-        // dark icons if we're in light theme
         systemUiController.setStatusBarColor(
             color = Color.Transparent,
             darkIcons = useDarkIcons
@@ -77,7 +73,7 @@ fun OverviewBody(
         content = { innerPadding ->
             LazyColumn(contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp)) {
                 items(animeData) { anime ->
-                    repeat(2){
+                    repeat(1){
                         AnimeRow(title = anime.first, animes = anime.second, onClickAnime = onClickAnime)
                     }
                 }
@@ -87,7 +83,7 @@ fun OverviewBody(
 }
 
 @Composable
-fun AnimeRow(title: String, animes: MutableList<Anime>, onClickAnime: (Anime) -> Unit) {
+fun AnimeRow(title: String, animes: MutableList<AnimePosterNode>, onClickAnime: (AnimePosterNode) -> Unit) {
     Spacer(modifier = Modifier.padding(8.dp))
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -112,7 +108,7 @@ fun AnimeRow(title: String, animes: MutableList<Anime>, onClickAnime: (Anime) ->
 
 
 @Composable
-fun AnimeItem(anime: Anime, onClickAnime: (Anime) -> Unit) {
+fun AnimeItem(anime: AnimePosterNode, onClickAnime: (AnimePosterNode) -> Unit) {
     // TODO: Move this into viewmodel
     val context = LocalContext.current
     var rgb by rememberSaveable { mutableStateOf(ContextCompat.getColor(context, R.color.black)) }
@@ -121,7 +117,7 @@ fun AnimeItem(anime: Anime, onClickAnime: (Anime) -> Unit) {
         coroutineScope.launch {
             val loader = ImageLoader(context)
             val request = ImageRequest.Builder(context)
-                .data(anime.attributes.posterImage.small) // demo link
+                .data(anime.node.main_picture.medium) // demo link
                 .build()
             val result = (loader.execute(request) as SuccessResult).drawable
             val bitmap = (result as BitmapDrawable).bitmap.copy(Bitmap.Config.ARGB_8888, true)
@@ -144,10 +140,10 @@ fun AnimeItem(anime: Anime, onClickAnime: (Anime) -> Unit) {
             .padding(8.dp)
 
     ) {
-        AnimePoster(anime.attributes.posterImage.small)
+        AnimePoster(anime.node.main_picture.medium)
         Spacer(modifier = Modifier.padding(5.dp))
         Text(
-            text = anime.attributes.canonicalTitle.uppercase(),
+            text = anime.node.title,
             fontSize = 12.sp, fontFamily = Constants.robotoFamily,
             fontWeight = FontWeight.Normal,
             color = Color(rgb),
@@ -155,10 +151,10 @@ fun AnimeItem(anime: Anime, onClickAnime: (Anime) -> Unit) {
             overflow = TextOverflow.Ellipsis
         )
         Text(
-            text = if (anime.attributes.episodeCount != null) "Episodes ${anime.attributes.episodeCount}" else "Ongoing",
+            text = if (anime.node.num_episodes != null) "Episodes ${anime.node.num_episodes}" else "Ongoing",
             fontFamily = Constants.robotoFamily, fontWeight = FontWeight.Normal
         )
-        Text(text = getSeasonYear(anime.attributes.startDate), fontSize = 12.sp, fontFamily = Constants.robotoFamily, fontWeight = FontWeight.Normal)
+        Text(text = anime.node.start_season.season, fontSize = 12.sp, fontFamily = Constants.robotoFamily, fontWeight = FontWeight.Normal)
     }
 }
 

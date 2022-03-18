@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.firebasesample.data.models.User
-import com.example.firebasesample.ui.overview.KitsuApiStatus
 import com.example.firebasesample.utli.Auth
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
