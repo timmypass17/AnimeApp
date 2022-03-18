@@ -21,7 +21,8 @@ class AnimeDetailsViewModel() : ViewModel() {
     // If these states change, then composable recomposes too (same for remember)
     var anime: Anime by mutableStateOf(Anime())
     var isFavorited: Boolean by mutableStateOf( false)
-    var status: MalApiStatus by mutableStateOf(MalApiStatus.DONE)
+    var isWatched: Boolean by mutableStateOf(false)
+    var status: MalApiStatus by mutableStateOf(MalApiStatus.LOADING)
 
     fun getAnime(id: String) {
         status = MalApiStatus.LOADING
@@ -31,8 +32,7 @@ class AnimeDetailsViewModel() : ViewModel() {
                     query = id,
                     fields = "id,title,main_picture,start_season,synopsis"
                 )
-                checkForFavorited(anime.id) // check if anime is favorited
-                status = MalApiStatus.DONE
+                checkForFavoritedWatched(anime.id) // check if anime is favorited
             }
         } catch (e: Exception) {
             anime = Anime()
@@ -92,7 +92,7 @@ class AnimeDetailsViewModel() : ViewModel() {
             .addOnFailureListener {  }
     }
 
-    fun checkForFavorited(animeId: String) {
+    fun checkForFavoritedWatched(animeId: String) {
         Log.i("AnimeDetailsViewModel", "Checking for $animeId")
         val db = Firebase.firestore
         val docRef = db.document("users/${Firebase.auth.currentUser?.uid}")
@@ -102,10 +102,65 @@ class AnimeDetailsViewModel() : ViewModel() {
                 if (documentSnapshot.exists()) {
                     val user = documentSnapshot.toObject<User>() ?: User()
                     val animeFavorites = user.animeFavorites
+                    val animeWatched = user.animeWatched
                     isFavorited = animeFavorites.containsKey(animeId)
+                    isWatched = animeWatched.containsKey(animeId)
                     Log.i("AnimeDetailsViewModel", "$animeId is $isFavorited")
+                    status = MalApiStatus.DONE
                 }
             }
             .addOnFailureListener { e -> }
+    }
+
+    fun addToWatched(anime: Anime) {
+        val db = Firebase.firestore
+        val user = Firebase.auth.currentUser
+        val docRef = db.document("users/${user?.uid}") // get current user path
+
+        // Get current favorites
+        docRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                // Update favorites
+                val userDocument = documentSnapshot.toObject<User>()
+                val currentWatched = userDocument?.animeWatched
+                val animeToAdd = AnimePosterNode(
+                    node = AnimePoster(
+                        id = anime.id,
+                        title = anime.title,
+                        main_picture = AnimePicture(anime.main_picture.medium),
+                        num_episodes = anime.num_episodes,
+                        start_season = AnimeSeason(year = anime.start_season.year, season = anime.start_season.season)
+                    )
+                )
+                currentWatched?.put(anime.id, animeToAdd)
+                isWatched = true
+                docRef
+                    .update("animeWatched", currentWatched)
+                    .addOnSuccessListener { Log.i(TAG, "Added anime ${anime.title} to watchlist!") }
+                    .addOnFailureListener { Log.w(TAG, "Fail to add to watchlist") }
+            }
+            .addOnFailureListener {  }
+    }
+
+    fun removeFromWatched(animeId: String) {
+        val db = Firebase.firestore
+        val user = Firebase.auth.currentUser
+        val docRef = db.document("users/${user?.uid}") // get current user path
+        // Get current favorites
+        docRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                // Update favorites
+                val userDocument = documentSnapshot.toObject<User>()
+                val userWatchlist = userDocument?.animeWatched
+                userWatchlist?.remove(animeId)
+                isWatched = false
+                docRef
+                    .update("animeWatched", userWatchlist)
+                    .addOnSuccessListener { Log.i(TAG, "Removed anime $animeId from watchlist") }
+                    .addOnFailureListener { Log.w(TAG, "Fail to remove anime $animeId from watchlist") }
+            }
+            .addOnFailureListener {  }
     }
 }

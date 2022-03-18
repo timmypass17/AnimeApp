@@ -87,7 +87,8 @@ class LoginViewModel(val auth: FirebaseAuth = Firebase.auth) : ViewModel() {
                         uid = user?.uid.toString(),
                         username = user?.displayName ?: user?.email!!,
                         profileImage = user?.photoUrl.toString(),
-                        animeFavorites = mutableMapOf()
+                        animeFavorites = mutableMapOf(),
+                        animeWatched = mutableMapOf()
                     )
                     val docRef = db.document("users/${user?.uid}")
                     Log.d(TAG, "Doing firebase stuff")

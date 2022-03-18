@@ -9,6 +9,8 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.*
@@ -32,8 +34,11 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 fun AnimeDetailsBody(
     anime: Anime,
     isFavorited: Boolean,
+    isWatched: Boolean,
     onClickFavorite: (Anime) -> Unit,
     onClickRemoveFavorite: (String) -> Unit,
+    onClickWatched: (Anime) -> Unit,
+    onClickRemoveWatched: (String) -> Unit,
     status: MalApiStatus,
     onClickBack: () -> Unit
 ) {
@@ -49,8 +54,11 @@ fun AnimeDetailsBody(
                 AnimeDetail(
                     anime = anime,
                     isFavorited = isFavorited,
+                    isWatched = isWatched,
                     onClickFavorite = onClickFavorite,
                     onClickRemoveFavorite = onClickRemoveFavorite,
+                    onClickWatched = onClickWatched,
+                    onClickRemoveWatched = onClickRemoveWatched,
                     status = status
                 )
             }
@@ -61,8 +69,11 @@ fun AnimeDetailsBody(
 fun AnimeDetail(
     anime: Anime,
     isFavorited: Boolean,
+    isWatched: Boolean,
     onClickFavorite: (Anime) -> Unit,
     onClickRemoveFavorite: (String) -> Unit,
+    onClickWatched: (Anime) -> Unit,
+    onClickRemoveWatched: (String) -> Unit,
     status: MalApiStatus
 ) {
     AsyncImage(
@@ -79,8 +90,11 @@ fun AnimeDetail(
         AnimeHeading(
             anime = anime,
             isFavorited = isFavorited,
+            isWatched = isWatched,
             onClickFavorite = onClickFavorite,
-            onClickRemoveFavorite = onClickRemoveFavorite
+            onClickRemoveFavorite = onClickRemoveFavorite,
+            onClickWatched = onClickWatched,
+            onClickRemoveWatched = onClickRemoveWatched
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
@@ -92,8 +106,11 @@ fun AnimeDetail(
 fun AnimeHeading(
     anime: Anime,
     isFavorited: Boolean,
+    isWatched: Boolean,
     onClickFavorite: (Anime) -> Unit,
-    onClickRemoveFavorite: (String) -> Unit
+    onClickRemoveFavorite: (String) -> Unit,
+    onClickWatched: (Anime) -> Unit,
+    onClickRemoveWatched: (String) -> Unit,
 ) {
     Row {
         Column(modifier = Modifier.weight(3f)) {
@@ -122,6 +139,20 @@ fun AnimeHeading(
                         }
                     },
                 tint = colorResource(R.color.favorite)
+            )
+
+            Icon(
+                imageVector = if (isWatched) { Icons.Default.CheckCircle } else { Icons.Default.Check },
+                contentDescription = "Watched",
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable {
+                        if (isWatched) {
+                            onClickRemoveWatched(anime.id)
+                        } else {
+                            onClickWatched(anime)
+                        }
+                    }
             )
         }
     }

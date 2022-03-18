@@ -5,7 +5,14 @@ data class User(
     val uid: String,
     val username: String,
     val profileImage: String,
-    val animeFavorites: MutableMap<String, AnimePosterNode>
+    val animeFavorites: MutableMap<String, AnimePosterNode>,
+    val animeWatched: MutableMap<String, AnimePosterNode>
 ) {
-    constructor() : this (uid = "", username = "", profileImage = "", animeFavorites = mutableMapOf())
+    constructor() : this (
+        uid = "",
+        username = "",
+        profileImage = "",
+        animeFavorites = mutableMapOf(),
+        animeWatched = mutableMapOf()
+    )
 }

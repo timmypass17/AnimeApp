@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -136,6 +137,9 @@ fun FirebaseSampleNavHost(
             OverviewBody(
                 animeData = overviewViewModel.animeData,
                 onClickAnime = { anime ->
+                    // When user clicks on poster, fetch "One Piece" data and navigate to details
+                    animeDetailsViewModel.getAnime(anime.node.id)
+                    Log.i("MainActivity", "Calling getAnime()!")
                     navController.navigate("AnimeDetails/${anime.node.id}")
                 }
             )
@@ -151,13 +155,16 @@ fun FirebaseSampleNavHost(
             )
         ) { entry ->
             val id = entry.arguments?.getString("animeId")
-            animeDetailsViewModel.getAnime(id!!)
-
+//            animeDetailsViewModel.getAnime(anime.node.id)
+//            Log.i("MainActivity", "Calling getAnime()!")
             AnimeDetailsBody(
                 anime = animeDetailsViewModel.anime,
                 isFavorited = animeDetailsViewModel.isFavorited,
+                isWatched = animeDetailsViewModel.isWatched,
                 onClickFavorite = animeDetailsViewModel::addtoFavorites,
                 onClickRemoveFavorite = animeDetailsViewModel::removeFromFavorites,
+                onClickWatched = animeDetailsViewModel::addToWatched,
+                onClickRemoveWatched = animeDetailsViewModel::removeFromWatched,
                 status = animeDetailsViewModel.status,
                 onClickBack = {
                     navController.navigate(SampleScreen.Overview.name) {
@@ -176,6 +183,7 @@ fun FirebaseSampleNavHost(
                 user = profileViewModel.user,
                 animeFavorites = profileViewModel.animeFavorites,
                 onClickAnime = { anime ->
+                    animeDetailsViewModel.getAnime(anime.node.id)
                     navController.navigate("AnimeDetails/${anime.node.id}")
                 },
                 onClickLogout = {

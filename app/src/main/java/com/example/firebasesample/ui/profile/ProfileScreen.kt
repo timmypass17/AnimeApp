@@ -83,8 +83,8 @@ fun ProfileBody(
 fun ProfileHeader(user: User) {
     Row(
         modifier = Modifier
-            .background(Color.LightGray)
-            .padding(8.dp)
+//            .background(Color.LightGray)
+            .padding(16.dp)
     ) {
         AsyncImage(
             model = user.profileImage,
@@ -96,7 +96,7 @@ fun ProfileHeader(user: User) {
         Spacer(modifier = Modifier.width(8.dp))
         Row(
             modifier = Modifier
-                .background(Color.Gray)
+//                .background(Color.Gray)
                 .weight(1f)
                 .align(Alignment.CenterVertically),
             horizontalArrangement = Arrangement.SpaceAround
@@ -107,7 +107,7 @@ fun ProfileHeader(user: User) {
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("0")
-                Text("Followers")
+                Text("Follower")
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("0")
