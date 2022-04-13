@@ -16,7 +16,8 @@ enum class SampleScreen(
     Overview(Icons.Default.Home),
     AnimeDetails(Icons.Default.Face),
     Search(Icons.Default.Search),
-    Profile(Icons.Default.Person);
+    Profile(Icons.Default.Person),
+    Review(Icons.Default.Face);
 
     companion object {
         fun fromRoute(route: String?): SampleScreen =
@@ -27,6 +28,7 @@ enum class SampleScreen(
                 AnimeDetails.name -> AnimeDetails
                 Search.name -> Search
                 Profile.name -> Profile
+                Review.name -> Review
                 null -> Login
                 else -> throw IllegalArgumentException("Route $route is not recognized.")
             }

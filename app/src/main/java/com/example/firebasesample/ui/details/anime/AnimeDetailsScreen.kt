@@ -1,18 +1,16 @@
 package com.example.firebasesample.ui.details.anime
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -23,9 +21,11 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.firebasesample.R
 import com.example.firebasesample.data.models.Anime
+import com.example.firebasesample.data.models.AnimeReview
 import com.example.firebasesample.data.network.MalApiStatus
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -40,7 +40,9 @@ fun AnimeDetailsBody(
     onClickWatched: (Anime) -> Unit,
     onClickRemoveWatched: (String) -> Unit,
     status: MalApiStatus,
-    onClickBack: () -> Unit
+    onClickBack: () -> Unit,
+    onClickAddReview: (String, Int) -> Unit,
+    userReviews: List<AnimeReview>
 ) {
     val systemUiController = rememberSystemUiController()   // Status bar black
     SideEffect {
@@ -48,21 +50,56 @@ fun AnimeDetailsBody(
             color = Color.Black
         )
     }
-    LazyColumn {
-            // One item
-            items(listOf(anime)) { anime ->
-                AnimeDetail(
-                    anime = anime,
-                    isFavorited = isFavorited,
-                    isWatched = isWatched,
-                    onClickFavorite = onClickFavorite,
-                    onClickRemoveFavorite = onClickRemoveFavorite,
-                    onClickWatched = onClickWatched,
-                    onClickRemoveWatched = onClickRemoveWatched,
-                    status = status
-                )
+    Scaffold {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+        ) {
+            AnimeDetail(
+                anime = anime,
+                isFavorited = isFavorited,
+                isWatched = isWatched,
+                onClickFavorite = onClickFavorite,
+                onClickRemoveFavorite = onClickRemoveFavorite,
+                onClickWatched = onClickWatched,
+                onClickRemoveWatched = onClickRemoveWatched,
+                status = status
+            )
+            CreateReviewCard(
+                modifier = Modifier.padding(8.dp),
+                onClickAddReview = onClickAddReview
+            )
+        }
+        LazyColumn() {
+            items(userReviews) { review ->
+                // Put review compose here
             }
         }
+    }
+}
+
+@Composable
+fun CreateReviewCard(modifier: Modifier, onClickAddReview: (String, Int) -> Unit) {
+    Surface(modifier = modifier) {
+        Column() {
+            Text(
+                text = "Reviews",
+                fontSize = 24.sp
+            )
+            var text by remember { mutableStateOf("") }
+            OutlinedTextField(
+                modifier = Modifier.width(200.dp),
+                value = text,
+                onValueChange = { text = it },
+                label = { Text("Post a review!") }
+            )
+            Text(text = "x characters remaining")
+            Spacer(modifier = Modifier.padding(4.dp))
+            Button(onClick = { onClickAddReview(text, 8) }) {
+                Text("Submit Review")
+            }
+        }
+    }
 }
 
 @Composable
@@ -85,7 +122,9 @@ fun AnimeDetail(
         contentScale = ContentScale.FillHeight
     )
 
-    Column(modifier = Modifier.padding(24.dp)
+    Column(modifier = Modifier
+        .background(Color.LightGray)
+        .padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 12.dp)
     ) {
         AnimeHeading(
             anime = anime,
@@ -112,6 +151,7 @@ fun AnimeHeading(
     onClickWatched: (Anime) -> Unit,
     onClickRemoveWatched: (String) -> Unit,
 ) {
+    Log.i("AnimeDetailsScreen", anime.toString())
     Row {
         Column(modifier = Modifier.weight(3f)) {
             Text(anime.title)

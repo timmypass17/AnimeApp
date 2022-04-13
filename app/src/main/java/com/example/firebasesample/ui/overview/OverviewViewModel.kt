@@ -32,7 +32,7 @@ class OverviewViewModel() : ViewModel() {
             viewModelScope.launch {
                 animeData[0].second.addAll(MalApi.retrofitService.getTopRankingAnimeData(
                     ranking = "all",
-                    limit = 4,
+                    limit = 10,
                     fields = "title,main_picture,num_episodes,start_season"
                 ).data)
                 top_status = MalApiStatus.DONE

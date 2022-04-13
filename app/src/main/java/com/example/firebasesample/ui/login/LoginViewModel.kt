@@ -79,6 +79,7 @@ class LoginViewModel(val auth: FirebaseAuth = Firebase.auth) : ViewModel() {
                 if (task.isSuccessful) {
                     // Sign in success
                     isLoggedIn = true
+
                     validEmail = true
                     validPassword = true
 
@@ -88,7 +89,8 @@ class LoginViewModel(val auth: FirebaseAuth = Firebase.auth) : ViewModel() {
                         username = user?.displayName ?: user?.email!!,
                         profileImage = user?.photoUrl.toString(),
                         animeFavorites = mutableMapOf(),
-                        animeWatched = mutableMapOf()
+                        animeWatched = mutableMapOf(),
+                        animeReviews = mutableMapOf()
                     )
                     val docRef = db.document("users/${user?.uid}")
                     Log.d(TAG, "Doing firebase stuff")

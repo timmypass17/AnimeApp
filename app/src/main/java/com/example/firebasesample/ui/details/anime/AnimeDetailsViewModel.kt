@@ -23,6 +23,7 @@ class AnimeDetailsViewModel() : ViewModel() {
     var isFavorited: Boolean by mutableStateOf( false)
     var isWatched: Boolean by mutableStateOf(false)
     var status: MalApiStatus by mutableStateOf(MalApiStatus.LOADING)
+    var reviews: List<AnimeReview> by mutableStateOf(listOf())
 
     fun getAnime(id: String) {
         status = MalApiStatus.LOADING
@@ -30,7 +31,7 @@ class AnimeDetailsViewModel() : ViewModel() {
             viewModelScope.launch {
                 anime = MalApi.retrofitService.getAnime(
                     query = id,
-                    fields = "id,title,main_picture,start_season,synopsis"
+                    fields = "id,title,main_picture,start_season,synopsis,num_episodes"
                 )
                 checkForFavoritedWatched(anime.id) // check if anime is favorited
             }
@@ -162,5 +163,67 @@ class AnimeDetailsViewModel() : ViewModel() {
                     .addOnFailureListener { Log.w(TAG, "Fail to remove anime $animeId from watchlist") }
             }
             .addOnFailureListener {  }
+    }
+
+    fun addReview(review: String, rating: Int) {
+        val db = Firebase.firestore
+        val user = Firebase.auth.currentUser
+        val docRef = db.document("users/${user?.uid}") // get current user path
+        val reviewDocRef = db.document("reviews/${anime.id}")
+
+        // Create review object to add to firebase
+        val newReview = AnimeReview(
+            review = review,
+            rating = rating,
+            author = user?.uid ?: "",
+            createdAt = -1
+        )
+        // Add review to user's collection
+        docRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                // Update reviews
+                val userDocument = documentSnapshot.toObject<User>()
+                val userAnimeReview = userDocument?.animeReviews
+                userAnimeReview?.put(anime.id, newReview)
+                docRef
+                    .update("animeReviews", userAnimeReview)
+                    .addOnSuccessListener { }
+                    .addOnFailureListener { }
+            }
+            .addOnFailureListener {  }
+
+        // Add review to review's collection
+        reviewDocRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                // Update review list (reviews for this anime exists in firebase)
+                if (documentSnapshot.exists()) {
+                    val reviewDocument = documentSnapshot.toObject<AnimeReviews>()
+                    val updatedReviews = reviewDocument?.reviews
+                    updatedReviews?.add(newReview)
+                    reviewDocRef
+                        .update("reviews", updatedReviews)
+                } else { // add to firebase for first time
+                    reviewDocRef
+                        .set(AnimeReviews(mutableListOf(newReview)))
+                }
+            }
+    }
+
+    fun getUserRatings(animeID: String) {
+        // Get user ratings from firebase and store in viewmodel
+        val db = Firebase.firestore
+        val docRef = db.document("reviews/$animeID")
+        docRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                Log.i("AnimeDetailsViewModel", "Getting user ratings")
+                if (documentSnapshot.exists()) {
+                    val userReviews = documentSnapshot.toObject<AnimeReview>() ?: AnimeReview()
+                    reviews = listOf(userReviews)
+                }
+            }
+            .addOnFailureListener { e -> }
     }
 }

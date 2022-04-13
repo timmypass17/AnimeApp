@@ -3,6 +3,7 @@ package com.example.firebasesample.ui.overview
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -30,10 +32,12 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.example.firebasesample.R
+import com.example.firebasesample.data.models.AnimePoster
 import com.example.firebasesample.data.models.AnimePosterNode
 import com.example.firebasesample.utli.Constants
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
+import java.util.*
 
 // Top app bar: https://developer.android.com/reference/kotlin/androidx/compose/material/package-summary#TopAppBar(kotlin.Function0,androidx.compose.ui.Modifier,kotlin.Function0,kotlin.Function1,androidx.compose.ui.graphics.Color,androidx.compose.ui.graphics.Color,androidx.compose.ui.unit.Dp)
 @Composable
@@ -65,15 +69,10 @@ fun OverviewBody(
                 }
             )
         },
-        bottomBar = {
-//            BottomAppBar {
-//                overviewTabRow()
-//            }
-        },
         content = { innerPadding ->
             LazyColumn(contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp)) {
                 items(animeData) { anime ->
-                    repeat(1){
+                    repeat(4){
                         AnimeRow(title = anime.first, animes = anime.second, onClickAnime = onClickAnime)
                     }
                 }
@@ -84,12 +83,15 @@ fun OverviewBody(
 
 @Composable
 fun AnimeRow(title: String, animes: MutableList<AnimePosterNode>, onClickAnime: (AnimePosterNode) -> Unit) {
-    Spacer(modifier = Modifier.padding(8.dp))
+    Spacer(modifier = Modifier.padding(4.dp))
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text = title,
-                modifier = Modifier.padding(start = 16.dp),
-                fontSize = 20.sp, fontFamily = Constants.robotoFamily, fontWeight = FontWeight.Normal)
+                modifier = Modifier.padding(start = 12.dp),
+                fontSize = 20.sp,
+                fontFamily = Constants.robotoFamily,
+                fontWeight = FontWeight.Normal
+            )
             Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Next")
         }
         Spacer(modifier = Modifier.padding(4.dp))
@@ -97,7 +99,7 @@ fun AnimeRow(title: String, animes: MutableList<AnimePosterNode>, onClickAnime: 
             modifier = Modifier
                 .fillMaxWidth()
                 .height(270.dp),
-            contentPadding = PaddingValues(start = 8.dp, end = 8.dp)
+            contentPadding = PaddingValues(start = 2.dp, end = 2.dp)
             ) {
             items(animes) { anime ->
                 AnimeItem(anime, onClickAnime)
@@ -132,7 +134,7 @@ fun AnimeItem(anime: AnimePosterNode, onClickAnime: (AnimePosterNode) -> Unit) {
     
     Column(
         modifier = Modifier
-            .width(140.dp)
+            .width(130.dp)
             .fillMaxHeight()
             .clickable {
                 onClickAnime(anime)
@@ -154,7 +156,16 @@ fun AnimeItem(anime: AnimePosterNode, onClickAnime: (AnimePosterNode) -> Unit) {
             text = if (anime.node.num_episodes != null) "Episodes ${anime.node.num_episodes}" else "Ongoing",
             fontFamily = Constants.robotoFamily, fontWeight = FontWeight.Normal
         )
-        Text(text = anime.node.start_season.season, fontSize = 12.sp, fontFamily = Constants.robotoFamily, fontWeight = FontWeight.Normal)
+        Text(
+            text = "${anime.node.start_season.season.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(
+                    Locale.getDefault()
+                ) else it.toString()
+            }} ${anime.node.start_season.year}",
+            fontSize = 12.sp,
+            fontFamily = Constants.robotoFamily,
+            fontWeight = FontWeight.Normal
+        )
     }
 }
 
@@ -168,7 +179,8 @@ fun AnimePoster(url: String) {
         contentDescription = null,
         modifier = Modifier
             .height(175.dp)
-            .width(250.dp),
-        contentScale = ContentScale.Fit
+            .width(250.dp)
+            .background(Color.LightGray),
+        contentScale = ContentScale.FillHeight
     )
 }

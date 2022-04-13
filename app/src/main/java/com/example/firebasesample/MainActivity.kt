@@ -21,6 +21,7 @@ import androidx.navigation.navArgument
 import com.example.firebasesample.ui.components.OverviewTabRow
 import com.example.firebasesample.ui.details.anime.AnimeDetailsBody
 import com.example.firebasesample.ui.details.anime.AnimeDetailsViewModel
+import com.example.firebasesample.ui.details.review.ReviewBody
 import com.example.firebasesample.ui.login.LoginBody
 import com.example.firebasesample.ui.login.LoginViewModel
 import com.example.firebasesample.ui.overview.OverviewBody
@@ -113,7 +114,6 @@ fun FirebaseSampleNavHost(
     profileViewModel: ProfileViewModel
 ) {
     val isLoggedIn = loginViewModel.isLoggedIn
-
     NavHost(
         navController = navController,
         startDestination = if (loginViewModel.userSignedIn() or isLoggedIn) SampleScreen.Overview.name else SampleScreen.Login.name, // user signed in already
@@ -133,13 +133,14 @@ fun FirebaseSampleNavHost(
         composable(SampleScreen.SignUp.name) {
             SignUpBody(onClickSignUp = loginViewModel::signUp)
         }
+
         composable(SampleScreen.Overview.name) {
             OverviewBody(
                 animeData = overviewViewModel.animeData,
                 onClickAnime = { anime ->
                     // When user clicks on poster, fetch "One Piece" data and navigate to details
                     animeDetailsViewModel.getAnime(anime.node.id)
-                    Log.i("MainActivity", "Calling getAnime()!")
+                    animeDetailsViewModel.getUserRatings(anime.node.id)
                     navController.navigate("AnimeDetails/${anime.node.id}")
                 }
             )
@@ -155,8 +156,6 @@ fun FirebaseSampleNavHost(
             )
         ) { entry ->
             val id = entry.arguments?.getString("animeId")
-//            animeDetailsViewModel.getAnime(anime.node.id)
-//            Log.i("MainActivity", "Calling getAnime()!")
             AnimeDetailsBody(
                 anime = animeDetailsViewModel.anime,
                 isFavorited = animeDetailsViewModel.isFavorited,
@@ -170,7 +169,9 @@ fun FirebaseSampleNavHost(
                     navController.navigate(SampleScreen.Overview.name) {
                         popUpTo(SampleScreen.Overview.name) { inclusive = true } // pop off everything up to overview screen
                     }
-                }
+                },
+                onClickAddReview = animeDetailsViewModel::addReview,
+                userReviews = animeDetailsViewModel.reviews
             )
         }
 
