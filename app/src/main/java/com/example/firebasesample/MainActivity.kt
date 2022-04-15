@@ -141,6 +141,7 @@ fun FirebaseSampleNavHost(
                     // When user clicks on poster, fetch "One Piece" data and navigate to details
                     animeDetailsViewModel.getAnime(anime.node.id)
                     animeDetailsViewModel.getUserRatings(anime.node.id)
+                    profileViewModel.getCurrentUser()
                     navController.navigate("AnimeDetails/${anime.node.id}")
                 }
             )
@@ -158,6 +159,7 @@ fun FirebaseSampleNavHost(
             val id = entry.arguments?.getString("animeId")
             AnimeDetailsBody(
                 anime = animeDetailsViewModel.anime,
+                user = profileViewModel.user,
                 isFavorited = animeDetailsViewModel.isFavorited,
                 isWatched = animeDetailsViewModel.isWatched,
                 onClickFavorite = animeDetailsViewModel::addtoFavorites,

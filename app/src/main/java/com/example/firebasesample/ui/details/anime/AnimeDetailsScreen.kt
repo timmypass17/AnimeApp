@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -20,8 +21,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,13 +36,16 @@ import coil.compose.AsyncImage
 import com.example.firebasesample.R
 import com.example.firebasesample.data.models.Anime
 import com.example.firebasesample.data.models.AnimeReview
+import com.example.firebasesample.data.models.User
 import com.example.firebasesample.data.network.MalApiStatus
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlin.math.exp
 
 @Composable
 @ExperimentalMaterialApi
 fun AnimeDetailsBody(
     anime: Anime,
+    user: User,
     isFavorited: Boolean,
     isWatched: Boolean,
     onClickFavorite: (Anime) -> Unit,
@@ -63,16 +70,15 @@ fun AnimeDetailsBody(
                     onClickRemoveWatched = onClickRemoveWatched,
                     status = status
                 )
-            }
-            item {
-                CreateReviewCard(
-                    modifier = Modifier.padding(8.dp),
+                CreateReview(
+                    modifier = Modifier.padding(16.dp),
                     onClickAddReview = onClickAddReview,
-                    numReviews = userReviews.size
+                    numReviews = userReviews.size,
+                    user = user
                 )
             }
             items(userReviews) { review ->
-                ReviewCard(review)
+                Review(review)
             }
             item {
                 Row {
@@ -87,7 +93,66 @@ fun AnimeDetailsBody(
 }
 
 @Composable
-fun ReviewCard(review: AnimeReview) {
+fun CreateReview(modifier: Modifier, onClickAddReview: (String, Int) -> Unit, numReviews: Int, user: User) {
+    Column(modifier = modifier) {
+        Text(text = "$numReviews Reviews", fontSize = 24.sp)
+        Spacer(modifier = Modifier.padding(8.dp))
+        
+        var text by remember { mutableStateOf("") }
+        val focusRequester = remember { FocusRequester() }
+        val focusManager = LocalFocusManager.current
+
+        Row {
+            AsyncImage(
+                model = user.profileImage,
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(CircleShape)
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Column {
+                Row {
+                    Text(
+                        text = user.username,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Add a comment...") }
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    OutlinedButton(
+                        onClick = { focusManager.clearFocus() }
+                    ) {
+                        Text("CANCEL")
+                    }
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    Button(
+                        onClick = {
+                            onClickAddReview(text, 8)
+                            text = ""
+                            focusManager.clearFocus() },
+                        enabled = text.isNotBlank()
+                    ) {
+                        Text("COMMENT")
+                    }
+                }
+            }
+        }
+    }
+    Divider(startIndent = 80.dp)
+}
+
+@Composable
+fun Review(review: AnimeReview) {
     Row(modifier = Modifier.padding(16.dp)) {
         AsyncImage(
             model = review.authorData.profileImage,
@@ -114,37 +179,6 @@ fun ReviewCard(review: AnimeReview) {
         }
     }
     Divider(startIndent = 80.dp)
-}
-
-@Composable
-fun CreateReviewCard(modifier: Modifier, onClickAddReview: (String, Int) -> Unit, numReviews: Int) {
-    Column(modifier = modifier
-        .background(Color.LightGray)
-    )
-    {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Reviews",
-                fontSize = 24.sp
-            )
-            Text(
-                text = " ($numReviews)",
-                fontSize = 20.sp
-            )
-        }
-        var text by remember { mutableStateOf("") }
-        OutlinedTextField(
-            value = text,
-            onValueChange = { text = it },
-            label = { Text("Post a review!") }
-        )
-        Spacer(modifier = Modifier.padding(4.dp))
-        Button(onClick = { onClickAddReview(text, 8) }) {
-            Text("COMMENT")
-        }
-    }
 }
 
 @Composable
@@ -223,20 +257,6 @@ fun AnimeHeading(
                         }
                     },
                 tint = colorResource(R.color.favorite)
-            )
-
-            Icon(
-                imageVector = if (isWatched) { Icons.Default.CheckCircle } else { Icons.Default.Check },
-                contentDescription = "Watched",
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clickable {
-                        if (isWatched) {
-                            onClickRemoveWatched(anime.id)
-                        } else {
-                            onClickWatched(anime)
-                        }
-                    }
             )
         }
     }
