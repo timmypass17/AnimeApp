@@ -1,7 +1,5 @@
 package com.example.firebasesample.data.models
 
-import org.checkerframework.checker.units.qual.m
-
 data class AnimePosterResponse(
     val data: List<AnimePosterNode>
 )
@@ -68,6 +66,7 @@ data class Anime(
     )
 }
 
+/** User Review Object **/
 data class AnimeReviews(
     val reviews: MutableList<AnimeReview>
 ) {
@@ -77,15 +76,29 @@ data class AnimeReviews(
 }
 
 data class AnimeReview(
+    val authorData: AnimeReviewAuthor,
+    val animeData: AnimePosterNode
+) {
+    constructor() : this (
+        authorData = AnimeReviewAuthor(),
+        animeData = AnimePosterNode()
+    )
+}
+
+data class AnimeReviewAuthor(
     val review: String,
     val rating: Int,
     val author: String,
-    val createdAt: Int // unix epoch
+    val createdAt: String,
+    val username: String,
+    val profileImage: String
 ) {
     constructor() : this (
         review = "",
         rating = -1,
         author = "",
-        createdAt = -1
+        createdAt = "",
+        username = "",
+        profileImage = ""
     )
 }

@@ -14,6 +14,8 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 val TAG = "AnimeDetailsViewModel"
 class AnimeDetailsViewModel() : ViewModel() {
@@ -26,6 +28,7 @@ class AnimeDetailsViewModel() : ViewModel() {
     var reviews: List<AnimeReview> by mutableStateOf(listOf())
 
     fun getAnime(id: String) {
+        Log.i("MainActivity", "Calling getAnime")
         status = MalApiStatus.LOADING
         try {
             viewModelScope.launch {
@@ -172,11 +175,26 @@ class AnimeDetailsViewModel() : ViewModel() {
         val reviewDocRef = db.document("reviews/${anime.id}")
 
         // Create review object to add to firebase
-        val newReview = AnimeReview(
+        val author = AnimeReviewAuthor(
             review = review,
             rating = rating,
             author = user?.uid ?: "",
-            createdAt = -1
+            createdAt = "3 days ago",
+            username = user?.displayName.toString(),
+            profileImage = user?.photoUrl.toString()
+        )
+        val animePoster = AnimePosterNode(
+            AnimePoster(
+                id = anime.id,
+                title = anime.title,
+                main_picture = AnimePicture(anime.main_picture.medium),
+                num_episodes = anime.num_episodes,
+                start_season = AnimeSeason(anime.start_season.year, anime.start_season.season)
+            )
+        )
+        val reviewToAdd = AnimeReview(
+            authorData = author,
+            animeData = animePoster
         )
         // Add review to user's collection
         docRef
@@ -185,10 +203,10 @@ class AnimeDetailsViewModel() : ViewModel() {
                 // Update reviews
                 val userDocument = documentSnapshot.toObject<User>()
                 val userAnimeReview = userDocument?.animeReviews
-                userAnimeReview?.put(anime.id, newReview)
+                userAnimeReview?.put(anime.id, reviewToAdd)
                 docRef
                     .update("animeReviews", userAnimeReview)
-                    .addOnSuccessListener { }
+                    .addOnSuccessListener { getUserRatings(anime.id) }
                     .addOnFailureListener { }
             }
             .addOnFailureListener {  }
@@ -201,17 +219,18 @@ class AnimeDetailsViewModel() : ViewModel() {
                 if (documentSnapshot.exists()) {
                     val reviewDocument = documentSnapshot.toObject<AnimeReviews>()
                     val updatedReviews = reviewDocument?.reviews
-                    updatedReviews?.add(newReview)
+                    updatedReviews?.add(reviewToAdd)
                     reviewDocRef
                         .update("reviews", updatedReviews)
                 } else { // add to firebase for first time
                     reviewDocRef
-                        .set(AnimeReviews(mutableListOf(newReview)))
+                        .set(AnimeReviews(mutableListOf(reviewToAdd)))
                 }
             }
     }
 
     fun getUserRatings(animeID: String) {
+        Log.i("MainActivity", "Calling getUserRatings")
         // Get user ratings from firebase and store in viewmodel
         val db = Firebase.firestore
         val docRef = db.document("reviews/$animeID")
@@ -220,8 +239,10 @@ class AnimeDetailsViewModel() : ViewModel() {
             .addOnSuccessListener { documentSnapshot ->
                 Log.i("AnimeDetailsViewModel", "Getting user ratings")
                 if (documentSnapshot.exists()) {
-                    val userReviews = documentSnapshot.toObject<AnimeReview>() ?: AnimeReview()
-                    reviews = listOf(userReviews)
+                    val userReviews = documentSnapshot.toObject<AnimeReviews>() ?: AnimeReviews()
+                    reviews = userReviews.reviews
+                } else {
+                    reviews = listOf()
                 }
             }
             .addOnFailureListener { e -> }

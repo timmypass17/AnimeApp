@@ -45,17 +45,6 @@ fun OverviewBody(
     animeData: List<Pair<String, MutableList<AnimePosterNode>>>,
     onClickAnime: (AnimePosterNode) -> Unit
     ) {
-
-    val systemUiController = rememberSystemUiController()   // Status bar black
-
-    val useDarkIcons = MaterialTheme.colors.isLight
-    SideEffect {
-        systemUiController.setStatusBarColor(
-            color = Color.Transparent,
-            darkIcons = useDarkIcons
-        )
-    }
-
     var expanded by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         topBar = {

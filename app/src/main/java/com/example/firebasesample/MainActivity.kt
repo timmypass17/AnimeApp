@@ -183,8 +183,10 @@ fun FirebaseSampleNavHost(
             ProfileBody(
                 user = profileViewModel.user,
                 animeFavorites = profileViewModel.animeFavorites,
+                animeReviewed = profileViewModel.animeReviewed,
                 onClickAnime = { anime ->
                     animeDetailsViewModel.getAnime(anime.node.id)
+                    animeDetailsViewModel.getUserRatings(anime.node.id)
                     navController.navigate("AnimeDetails/${anime.node.id}")
                 },
                 onClickLogout = {

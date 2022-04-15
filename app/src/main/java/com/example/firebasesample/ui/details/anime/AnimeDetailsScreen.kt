@@ -1,23 +1,29 @@
 package com.example.firebasesample.ui.details.anime
 
 import android.util.Log
+import android.widget.RatingBar
+import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,60 +50,99 @@ fun AnimeDetailsBody(
     onClickAddReview: (String, Int) -> Unit,
     userReviews: List<AnimeReview>
 ) {
-    val systemUiController = rememberSystemUiController()   // Status bar black
-    SideEffect {
-        systemUiController.setSystemBarsColor(
-            color = Color.Black
-        )
-    }
     Scaffold {
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-        ) {
-            AnimeDetail(
-                anime = anime,
-                isFavorited = isFavorited,
-                isWatched = isWatched,
-                onClickFavorite = onClickFavorite,
-                onClickRemoveFavorite = onClickRemoveFavorite,
-                onClickWatched = onClickWatched,
-                onClickRemoveWatched = onClickRemoveWatched,
-                status = status
-            )
-            CreateReviewCard(
-                modifier = Modifier.padding(8.dp),
-                onClickAddReview = onClickAddReview
-            )
-        }
-        LazyColumn() {
+        LazyColumn {
+            item {
+                AnimeDetail(
+                    anime = anime,
+                    isFavorited = isFavorited,
+                    isWatched = isWatched,
+                    onClickFavorite = onClickFavorite,
+                    onClickRemoveFavorite = onClickRemoveFavorite,
+                    onClickWatched = onClickWatched,
+                    onClickRemoveWatched = onClickRemoveWatched,
+                    status = status
+                )
+            }
+            item {
+                CreateReviewCard(
+                    modifier = Modifier.padding(8.dp),
+                    onClickAddReview = onClickAddReview,
+                    numReviews = userReviews.size
+                )
+            }
             items(userReviews) { review ->
-                // Put review compose here
+                ReviewCard(review)
+            }
+            item {
+                Row {
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    if (userReviews.isEmpty()) {
+                        Text("No comments")
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun CreateReviewCard(modifier: Modifier, onClickAddReview: (String, Int) -> Unit) {
-    Surface(modifier = modifier) {
-        Column() {
+fun ReviewCard(review: AnimeReview) {
+    Row(modifier = Modifier.padding(16.dp)) {
+        AsyncImage(
+            model = review.authorData.profileImage,
+            contentDescription = "Profile Image",
+            modifier = Modifier
+                .size(52.dp)
+                .clip(CircleShape)
+        )
+        Spacer(modifier = Modifier.padding(8.dp))
+        Column {
+            Row {
+                Text(
+                    text = review.authorData.username,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(
+                    color = Color.Gray,
+                    text = review.authorData.createdAt
+                )
+            }
+            Spacer(modifier = Modifier.padding(2.dp))
+            Text(text = review.authorData.review)
+        }
+    }
+    Divider(startIndent = 80.dp)
+}
+
+@Composable
+fun CreateReviewCard(modifier: Modifier, onClickAddReview: (String, Int) -> Unit, numReviews: Int) {
+    Column(modifier = modifier
+        .background(Color.LightGray)
+    )
+    {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
                 text = "Reviews",
                 fontSize = 24.sp
             )
-            var text by remember { mutableStateOf("") }
-            OutlinedTextField(
-                modifier = Modifier.width(200.dp),
-                value = text,
-                onValueChange = { text = it },
-                label = { Text("Post a review!") }
+            Text(
+                text = " ($numReviews)",
+                fontSize = 20.sp
             )
-            Text(text = "x characters remaining")
-            Spacer(modifier = Modifier.padding(4.dp))
-            Button(onClick = { onClickAddReview(text, 8) }) {
-                Text("Submit Review")
-            }
+        }
+        var text by remember { mutableStateOf("") }
+        OutlinedTextField(
+            value = text,
+            onValueChange = { text = it },
+            label = { Text("Post a review!") }
+        )
+        Spacer(modifier = Modifier.padding(4.dp))
+        Button(onClick = { onClickAddReview(text, 8) }) {
+            Text("COMMENT")
         }
     }
 }
@@ -123,7 +168,6 @@ fun AnimeDetail(
     )
 
     Column(modifier = Modifier
-        .background(Color.LightGray)
         .padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 12.dp)
     ) {
         AnimeHeading(

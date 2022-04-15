@@ -12,18 +12,17 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.SuccessResult
 import com.example.firebasesample.data.models.AnimePosterNode
+import com.example.firebasesample.data.models.AnimeReview
 import com.example.firebasesample.data.models.User
 import com.example.firebasesample.ui.overview.AnimeItem
 
@@ -32,6 +31,7 @@ import com.example.firebasesample.ui.overview.AnimeItem
 fun ProfileBody(
     user: User,
     animeFavorites: MutableMap<String, AnimePosterNode>,
+    animeReviewed: MutableMap<String, AnimeReview>,
     onClickAnime: (AnimePosterNode) -> Unit,
     onClickLogout: () -> Unit,
     ) {
@@ -67,23 +67,72 @@ fun ProfileBody(
         },
     ) {
         Column {
-            ProfileHeader(user = user)
-            LazyVerticalGrid(
-                cells = GridCells.Fixed(3),
-            ) {
-                items(animeFavorites.values.toMutableList()) { anime ->
-                    AnimeItem(anime, onClickAnime)
-                }
-            }
+            Profile(user)
+            ProfileTabRow(user = user, onClickAnime = onClickAnime)
         }
     }
 }
 
 @Composable
-fun ProfileHeader(user: User) {
+fun ProfileTabRow(user: User, onClickAnime: (AnimePosterNode) -> Unit) {
+    var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
+    val tabs = listOf("Reviews", "Favorites", "Seen", "Currently Watching", "Saved")
+    ScrollableTabRow(
+        selectedTabIndex = selectedTabIndex,
+        backgroundColor = Color.Transparent,
+        edgePadding = 0.dp
+    ) {
+        tabs.forEachIndexed { tabIndex, tab ->
+            Tab(
+                selected = selectedTabIndex == tabIndex,
+                onClick = { selectedTabIndex = tabIndex },
+                text = { Text(text = tab) }
+            )
+        }
+    }
+    when (tabs[selectedTabIndex]) {
+        "Reviews" -> Reviews(animeReviewed = user.animeReviews, onClickAnime = onClickAnime)
+        "Favorites" -> Favorites(animeReviewed = user.animeFavorites, onClickAnime = onClickAnime)
+    }
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun Reviews(animeReviewed: MutableMap<String, AnimeReview>, onClickAnime: (AnimePosterNode) -> Unit) {
+    LazyVerticalGrid(
+        cells = GridCells.Fixed(3),
+    ) {
+        // Extract anime poster nodes from user's reviewed to display onto profile screen
+        val reviews = mutableListOf<AnimePosterNode>()
+        val reviewData = animeReviewed.values
+        for (currentReview in reviewData) {
+            reviews.add(currentReview.animeData)
+        }
+
+        items(reviews) { anime ->
+            AnimeItem(anime, onClickAnime)
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun Favorites(animeReviewed: MutableMap<String, AnimePosterNode>, onClickAnime: (AnimePosterNode) -> Unit) {
+    LazyVerticalGrid(
+        cells = GridCells.Fixed(3),
+    ) {
+
+        items(animeReviewed.values.toMutableList()) { anime ->
+            AnimeItem(anime, onClickAnime)
+        }
+    }
+}
+
+@Composable
+fun Profile(user: User) {
     Row(
         modifier = Modifier
-//            .background(Color.LightGray)
             .padding(16.dp)
     ) {
         AsyncImage(
@@ -96,22 +145,21 @@ fun ProfileHeader(user: User) {
         Spacer(modifier = Modifier.width(8.dp))
         Row(
             modifier = Modifier
-//                .background(Color.Gray)
                 .weight(1f)
                 .align(Alignment.CenterVertically),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(user.animeFavorites.size.toString())
+                Text(user.animeReviews.size.toString())
                 Text("Reviews")
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("0")
-                Text("Follower")
+                Text(user.animeFavorites.size.toString())
+                Text("Favorites")
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("0")
-                Text("Following")
+                Text("Seen")
             }
         }
     }
