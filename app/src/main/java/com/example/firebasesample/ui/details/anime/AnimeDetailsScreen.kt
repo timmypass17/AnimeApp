@@ -3,6 +3,7 @@ package com.example.firebasesample.ui.details.anime
 import android.util.Log
 import android.widget.RatingBar
 import android.widget.Space
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,19 +21,28 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.transform.CircleCropTransformation
+import coil.transform.Transformation
 import com.example.firebasesample.R
 import com.example.firebasesample.data.models.Anime
 import com.example.firebasesample.data.models.AnimeReview
@@ -70,6 +80,7 @@ fun AnimeDetailsBody(
                     onClickRemoveWatched = onClickRemoveWatched,
                     status = status
                 )
+                Divider()
                 CreateReview(
                     modifier = Modifier.padding(16.dp),
                     onClickAddReview = onClickAddReview,
@@ -119,7 +130,9 @@ fun CreateReview(modifier: Modifier, onClickAddReview: (String, Int) -> Unit, nu
                     )
                 }
                 OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
                     value = text,
                     onValueChange = { text = it },
                     label = { Text("Add a comment...") }
@@ -192,18 +205,18 @@ fun AnimeDetail(
     onClickRemoveWatched: (String) -> Unit,
     status: MalApiStatus
 ) {
-    AsyncImage(
-        model = anime.main_picture.medium,
-        contentDescription = null,
-        modifier = Modifier
-            .height(275.dp)
-            .background(Color.LightGray),
-        contentScale = ContentScale.FillHeight
-    )
 
-    Column(modifier = Modifier
-        .padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 12.dp)
-    ) {
+    Column(modifier = Modifier.padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 18.dp)) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(anime.main_picture.medium)
+                .build(),
+            contentDescription = null,
+            modifier = Modifier
+                .height(200.dp)
+                .background(Color.LightGray)
+        )
+        Spacer(modifier = Modifier.padding(8.dp))
         AnimeHeading(
             anime = anime,
             isFavorited = isFavorited,
@@ -214,7 +227,7 @@ fun AnimeDetail(
             onClickRemoveWatched = onClickRemoveWatched
         )
 
-        Spacer(modifier = Modifier.padding(16.dp))
+        Spacer(modifier = Modifier.padding(12.dp))
         AnimeSynopsis(synopsis = anime.synopsis)
     }
 }
@@ -229,19 +242,21 @@ fun AnimeHeading(
     onClickWatched: (Anime) -> Unit,
     onClickRemoveWatched: (String) -> Unit,
 ) {
-    Log.i("AnimeDetailsScreen", anime.toString())
     Row {
-        Column(modifier = Modifier.weight(3f)) {
-            Text(anime.title)
-            Text(anime.start_season.season)
+        Column(modifier = Modifier.weight(5f)) {
+            Text(
+                text = anime.title,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
             Row {
-                Text("start date")
-                Text(" - ")
-                Text("end date")
+                Text(anime.start_season.season.capitalize(), color = Color.Gray)
+                Spacer(modifier = Modifier.padding(2.dp))
+                Text(anime.start_season.year, color = Color.Gray)
             }
         }
         Column(
-            modifier = Modifier.weight(2f),
+            modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.End
         ) {
             Icon(
@@ -265,22 +280,27 @@ fun AnimeHeading(
 @Composable
 fun AnimeSynopsis(synopsis: String) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
-    Text(
-        text = synopsis,
-        maxLines = if (isExpanded) Int.MAX_VALUE else 4,
-        overflow = TextOverflow.Ellipsis
-    )
-    Spacer(modifier = Modifier.padding(4.dp))
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End
-    )
-    {
+    Column(
+        modifier = Modifier.animateContentSize().padding(1.dp)
+    ) {
         Text(
-            text = if (!isExpanded) "Read more" else "Read less",
-            modifier = Modifier
-                .clickable { isExpanded = !isExpanded }
-                .padding(8.dp)
+            text = synopsis,
+            maxLines = if (isExpanded) Int.MAX_VALUE else 4,
+            overflow = TextOverflow.Ellipsis,
+            lineHeight = 24.sp
         )
+        Spacer(modifier = Modifier.padding(4.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text(
+                text = if (!isExpanded) "Read more" else "Read less",
+                modifier = Modifier
+                    .clickable { isExpanded = !isExpanded }
+                    .padding(8.dp),
+                color =  colorResource(id = R.color.dark_blue)
+            )
+        }
     }
 }

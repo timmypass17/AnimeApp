@@ -11,4 +11,5 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="favorite">#ff7398</color>
+    <color name="dark_blue">#0d47a1</color>
 </resources>

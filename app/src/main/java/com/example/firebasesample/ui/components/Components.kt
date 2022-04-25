@@ -6,6 +6,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import com.example.firebasesample.R
 import com.example.firebasesample.SampleScreen
 
 // Don't know why icons are invisible.. have to do it manually
@@ -15,7 +17,7 @@ fun OverviewTabRow(
     onTabSelected: (SampleScreen) -> Unit,
     currentScreen: SampleScreen
 ) {
-    BottomNavigation {
+    BottomNavigation(backgroundColor = colorResource(R.color.dark_blue)) {
         allScreens.forEach() { screen ->
             BottomNavigationItem(
                 icon = {

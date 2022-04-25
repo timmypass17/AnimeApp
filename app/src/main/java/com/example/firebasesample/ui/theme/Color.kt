@@ -2,7 +2,7 @@ package com.example.firebasesample.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
+val Blue200 = Color(0xFF5472d3)   // light
+val Blue500 = Color(0xFF0d47a1)   // primary
+val Blue700 = Color(0xFF002171)   // dark
+val Teal200 = Color(0xFF03DAC5)     // secondary
