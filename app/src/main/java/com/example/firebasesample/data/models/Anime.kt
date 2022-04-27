@@ -54,16 +54,76 @@ data class Anime(
     val main_picture: AnimePicture,
     val start_season: AnimeSeason,
     val synopsis: String,
-    val num_episodes: String?
+    val num_episodes: String,
+    val related_anime: List<AnimeRelated>,
+    val recommendations: List<AnimeRecommendation>,
+    val start_date: String,
+    val end_date: String?,
+    val genres: List<AnimeGenre>
 ) {
     constructor() : this (
         id = "",
         title = "",
-        main_picture = AnimePicture(""),
-        start_season = AnimeSeason("", ""),
+        main_picture = AnimePicture(),
+        start_season = AnimeSeason(),
         synopsis = "",
-        num_episodes = ""
+        num_episodes = "",
+        related_anime = listOf(),
+        recommendations = listOf(),
+        start_date = "",
+        end_date = "",
+        genres = listOf()
     )
+}
+
+data class AnimeGenre(
+    val name: String
+) {
+    constructor() : this (
+        name = ""
+            )
+}
+
+data class AnimeRecommendation(
+    val node: AnimeRecommendationNode
+) {
+    constructor() : this (
+        node = AnimeRecommendationNode()
+            )
+}
+
+data class AnimeRecommendationNode(
+    val id: String,
+    val title: String,
+    val main_picture: AnimePicture
+) {
+    constructor() : this (
+        id = "",
+        title = "",
+        main_picture = AnimePicture()
+            )
+}
+
+data class AnimeRelated(
+    val node: RelatedAnimeNode,
+    val relation_type_formatted: String
+) {
+    constructor() : this (
+        node = RelatedAnimeNode(),
+        relation_type_formatted = ""
+            )
+}
+
+data class RelatedAnimeNode(
+    val id: String,
+    val title: String,
+    val main_picture: AnimePicture
+) {
+    constructor() : this (
+        id = "",
+        title = "",
+        main_picture = AnimePicture()
+            )
 }
 
 /** User Review Object **/

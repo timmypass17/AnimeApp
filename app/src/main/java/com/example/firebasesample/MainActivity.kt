@@ -80,7 +80,7 @@ fun FirebaseSampleApp(
         )
         Scaffold(
             bottomBar = {
-                if (currentScreen == SampleScreen.Overview || currentScreen == SampleScreen.Profile) {
+                if (currentScreen == SampleScreen.Overview || currentScreen == SampleScreen.Profile ) {
                     OverviewTabRow(
                         allScreens = bottomNavScreens,
                         onTabSelected = { screen -> navController.navigate(screen.name) },
@@ -173,7 +173,21 @@ fun FirebaseSampleNavHost(
                     }
                 },
                 onClickAddReview = animeDetailsViewModel::addReview,
-                userReviews = animeDetailsViewModel.reviews
+                userReviews = animeDetailsViewModel.reviews,
+                onClickRelatedAnime = { relatedAnime ->
+                    // When user clicks on poster, fetch "One Piece" data and navigate to details
+                    animeDetailsViewModel.getAnime(relatedAnime.node.id)
+                    animeDetailsViewModel.getUserRatings(relatedAnime.node.id)
+                    profileViewModel.getCurrentUser()
+                    navController.navigate("AnimeDetails/${relatedAnime.node.id}")
+                },
+                onClickRecommended = { animeRecommendation ->
+                    // When user clicks on poster, fetch "One Piece" data and navigate to details
+                    animeDetailsViewModel.getAnime(animeRecommendation.node.id)
+                    animeDetailsViewModel.getUserRatings(animeRecommendation.node.id)
+                    profileViewModel.getCurrentUser()
+                    navController.navigate("AnimeDetails/${animeRecommendation.node.id}")
+                }
             )
         }
 
@@ -194,6 +208,11 @@ fun FirebaseSampleNavHost(
                 onClickLogout = {
                     loginViewModel.signOut() // sign out of firebase
                     navController.navigate(SampleScreen.Login.name)
+                },
+                onClickBack = {
+                    navController.navigate(SampleScreen.Overview.name) {
+                        popUpTo(SampleScreen.Overview.name) { inclusive = true } // pop off everything up to overview screen
+                    }
                 }
             )
         }

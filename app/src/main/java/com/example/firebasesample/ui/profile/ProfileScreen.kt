@@ -34,16 +34,17 @@ fun ProfileBody(
     animeReviewed: MutableMap<String, AnimeReview>,
     onClickAnime: (AnimePosterNode) -> Unit,
     onClickLogout: () -> Unit,
+    onClickBack: () -> Unit
     ) {
     Log.i("ProfileScreen", animeFavorites.toString())
     Scaffold(
         topBar = {
             var expanded by rememberSaveable { mutableStateOf(false) }
             TopAppBar(
-                backgroundColor = Color.White,
+//                backgroundColor = Color.White,
                 title = { Text(user.username) },
                 navigationIcon = {
-                    IconButton(onClick = { /* doSomething() */ }) {
+                    IconButton(onClick = { onClickBack() }) {
                         Icon(Icons.Filled.KeyboardArrowLeft, contentDescription = "Back")
                     }
                 },
@@ -68,13 +69,13 @@ fun ProfileBody(
     ) {
         Column {
             Profile(user)
-            ProfileTabRow(user = user, onClickAnime = onClickAnime)
+            ProfileTab(user = user, onClickAnime = onClickAnime)
         }
     }
 }
 
 @Composable
-fun ProfileTabRow(user: User, onClickAnime: (AnimePosterNode) -> Unit) {
+fun ProfileTab(user: User, onClickAnime: (AnimePosterNode) -> Unit) {
     var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
     val tabs = listOf("Reviews", "Favorites", "Seen", "Currently Watching", "Saved")
     ScrollableTabRow(
@@ -159,7 +160,7 @@ fun Profile(user: User) {
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("0")
-                Text("Seen")
+                Text("Followers")
             }
         }
     }

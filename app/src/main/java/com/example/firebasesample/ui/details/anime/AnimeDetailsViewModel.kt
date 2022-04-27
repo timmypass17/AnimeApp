@@ -34,8 +34,9 @@ class AnimeDetailsViewModel() : ViewModel() {
             viewModelScope.launch {
                 anime = MalApi.retrofitService.getAnime(
                     query = id,
-                    fields = "id,title,main_picture,start_season,synopsis,num_episodes"
+                    fields = "id,title,main_picture,start_season,synopsis,num_episodes,related_anime,recommendations,start_date,end_date,genres"
                 )
+                Log.i("AnimeDetailsViewModel", anime.related_anime.toString())
                 checkForFavoritedWatched(anime.id) // check if anime is favorited
             }
         } catch (e: Exception) {
