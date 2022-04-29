@@ -141,8 +141,7 @@ fun AnimeRecommendedRow(title: String, animes: List<AnimeRecommendation>, onClic
             Text(text = title,
                 modifier = Modifier.padding(start = 12.dp),
                 fontSize = 20.sp,
-                fontFamily = Constants.robotoFamily,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Bold
             )
             Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Next")
         }
@@ -213,8 +212,7 @@ fun AnimeRelatedRow(title: String, animes: List<AnimeRelated>, onClickAnime: (An
             Text(text = title,
                 modifier = Modifier.padding(start = 12.dp),
                 fontSize = 20.sp,
-                fontFamily = Constants.robotoFamily,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Bold
             )
             Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Next")
         }

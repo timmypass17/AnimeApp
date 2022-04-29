@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -21,7 +20,6 @@ import androidx.navigation.navArgument
 import com.example.firebasesample.ui.components.OverviewTabRow
 import com.example.firebasesample.ui.details.anime.AnimeDetailsBody
 import com.example.firebasesample.ui.details.anime.AnimeDetailsViewModel
-import com.example.firebasesample.ui.details.review.ReviewBody
 import com.example.firebasesample.ui.login.LoginBody
 import com.example.firebasesample.ui.login.LoginViewModel
 import com.example.firebasesample.ui.overview.OverviewBody
@@ -136,6 +134,7 @@ fun FirebaseSampleNavHost(
 
         composable(SampleScreen.Overview.name) {
             OverviewBody(
+                overviewStatus = overviewViewModel.overviewStatus,
                 animeData = overviewViewModel.animeData,
                 onClickAnime = { anime ->
                     // When user clicks on poster, fetch "One Piece" data and navigate to details
@@ -169,7 +168,7 @@ fun FirebaseSampleNavHost(
                 status = animeDetailsViewModel.status,
                 onClickBack = {
                     navController.navigate(SampleScreen.Overview.name) {
-                        popUpTo(SampleScreen.Overview.name) { inclusive = true } // pop off everything up to overview screen
+                        popUpTo(SampleScreen.Overview.name) { inclusive = true } // pop off screen until
                     }
                 },
                 onClickAddReview = animeDetailsViewModel::addReview,
@@ -179,7 +178,9 @@ fun FirebaseSampleNavHost(
                     animeDetailsViewModel.getAnime(relatedAnime.node.id)
                     animeDetailsViewModel.getUserRatings(relatedAnime.node.id)
                     profileViewModel.getCurrentUser()
-                    navController.navigate("AnimeDetails/${relatedAnime.node.id}")
+                    navController.navigate("AnimeDetails/${relatedAnime.node.id}") {
+                        popUpTo(SampleScreen.Overview.name) { inclusive = false }
+                    }
                 },
                 onClickRecommended = { animeRecommendation ->
                     // When user clicks on poster, fetch "One Piece" data and navigate to details

@@ -34,6 +34,7 @@ import coil.request.SuccessResult
 import com.example.firebasesample.R
 import com.example.firebasesample.data.models.AnimePoster
 import com.example.firebasesample.data.models.AnimePosterNode
+import com.example.firebasesample.data.network.MalApiStatus
 import com.example.firebasesample.utli.Constants
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
@@ -42,15 +43,14 @@ import java.util.*
 // Top app bar: https://developer.android.com/reference/kotlin/androidx/compose/material/package-summary#TopAppBar(kotlin.Function0,androidx.compose.ui.Modifier,kotlin.Function0,kotlin.Function1,androidx.compose.ui.graphics.Color,androidx.compose.ui.graphics.Color,androidx.compose.ui.unit.Dp)
 @Composable
 fun OverviewBody(
-    animeData: List<Pair<String, MutableList<AnimePosterNode>>>,
+    overviewStatus: MalApiStatus,
+    animeData: List<Pair<String, List<AnimePosterNode>>>,
     onClickAnime: (AnimePosterNode) -> Unit
     ) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
-                backgroundColor = Color.White, // Color.Transparent, Color.White
-                title = {},
+                title = { Text("AnimeAppName") },
                 navigationIcon = {
                     IconButton(onClick = { /* doSomething() */ }) {
                         Icon(Icons.Filled.Menu, contentDescription = null)
@@ -60,9 +60,17 @@ fun OverviewBody(
         },
         content = { innerPadding ->
             LazyColumn(contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp)) {
-                items(animeData) { anime ->
-                    repeat(4){
-                        AnimeRow(title = anime.first, animes = anime.second, onClickAnime = onClickAnime)
+                item{
+                    if (overviewStatus == MalApiStatus.DONE) {
+                        for (i in animeData.indices) {
+                            if (animeData[i].second.size != 0) {
+                                AnimeRow(
+                                    title = animeData[i].first,
+                                    animes = animeData[i].second,
+                                    onClickAnime = onClickAnime
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -71,19 +79,26 @@ fun OverviewBody(
 }
 
 @Composable
-fun AnimeRow(title: String, animes: MutableList<AnimePosterNode>, onClickAnime: (AnimePosterNode) -> Unit) {
-    Spacer(modifier = Modifier.padding(4.dp))
+fun AnimeRow(title: String, animes: List<AnimePosterNode>,
+             onClickAnime: (AnimePosterNode) -> Unit,
+
+) {
     Column {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = title,
-                modifier = Modifier.padding(start = 12.dp),
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier.padding(10.dp),
+                text = title,
                 fontSize = 20.sp,
-                fontFamily = Constants.robotoFamily,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Bold
             )
             Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Next")
         }
-        Spacer(modifier = Modifier.padding(4.dp))
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,6 +109,7 @@ fun AnimeRow(title: String, animes: MutableList<AnimePosterNode>, onClickAnime: 
                 AnimeItem(anime, onClickAnime)
             }
         }
+        Divider()
     }
 }
 

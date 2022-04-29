@@ -7,42 +7,106 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.firebasesample.data.models.AnimePosterNode
+import com.example.firebasesample.data.models.OverviewData
+import com.example.firebasesample.data.models.OverviewDataList
 import com.example.firebasesample.data.network.MalApi
 import com.example.firebasesample.data.network.MalApiStatus
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
+const val TAG = "OverviewViewModel"
+const val OVERVIEW_ID = "0CJogOu7MZIRQGGXrnlp"
+const val POSTER_FIELDS = "title,main_picture,num_episodes,start_season"
 class OverviewViewModel() : ViewModel() {
 
-    val defaultAnimeData: List<Pair<String, MutableList<AnimePosterNode>>> =
-        listOf(
-            Pair("Top Anime", mutableListOf())
-        )
-    var animeData: List<Pair<String, MutableList<AnimePosterNode>>> by mutableStateOf(defaultAnimeData)
-    var errorMessage: String by mutableStateOf("")
+    var animeData: MutableList<Pair<String, List<AnimePosterNode>>> by mutableStateOf(mutableListOf())
+    var overviewDataList: OverviewDataList by mutableStateOf(OverviewDataList())
 
-    var top_status: MalApiStatus by mutableStateOf(MalApiStatus.DONE)
+    var overviewStatus: MalApiStatus by mutableStateOf(MalApiStatus.LOADING)
+    var overviewCount: Int by mutableStateOf(0)
 
     init {
-        getTopAnimes()
+        Log.i(TAG, "Creating viewmodel")
+        setupOverview()
     }
 
-    fun getTopAnimes() {
-        top_status = MalApiStatus.LOADING
+    fun setupOverview() {
+        overviewStatus = MalApiStatus.LOADING
+
+        val db = Firebase.firestore
+        val docRef = db.document("overview/${OVERVIEW_ID}")
+        Log.i(TAG, "Calling setupOverview()")
+        docRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    Log.i("OverviewViewModel", "Setting up overview")
+                    overviewDataList = documentSnapshot.toObject<OverviewDataList>() ?: OverviewDataList()
+                    Log.i(TAG, overviewDataList.data.size.toString())
+                    // Start querying api for anime data
+                    for (item in overviewDataList.data) {
+                        getAnimeRowData(item)
+                    }
+                }
+            }
+    }
+
+    fun getAnimeRowData(overviewData: OverviewData) {
         try {
             viewModelScope.launch {
-                animeData[0].second.addAll(MalApi.retrofitService.getTopRankingAnimeData(
-                    ranking = "all",
-                    limit = 10,
-                    fields = "title,main_picture,num_episodes,start_season"
-                ).data)
-                top_status = MalApiStatus.DONE
-                Log.i("OverviewModel", "Got popular anime")
+                when (overviewData.type) {
+                    "ranking" -> addingByRanking(overviewData)
+                    "season" -> addingBySeason(overviewData)
+                }
             }
         } catch (e: Exception) {
-            animeData[0].second.addAll(mutableListOf())
-            errorMessage = e.message.toString()
-            top_status = MalApiStatus.ERROR
-            Log.i("OverviewModel", "Did not get popular anime")
+
         }
+    }
+
+    fun addingByRanking(overviewData: OverviewData) {
+        try {
+            viewModelScope.launch {
+                Log.i("OverviewViewModel", "Adding top ranking animes")
+                val animeResult = MalApi.retrofitService.getTopRankingAnimeData(
+                    ranking = overviewData.ranking,
+                    limit = 10,
+                    fields = POSTER_FIELDS
+                )
+                animeData.add(Pair(overviewData.title, animeResult.data))
+                overviewCount += 1
+                Log.i(TAG, overviewCount.toString())
+                // Seen all api calls, update overview screen
+                if (overviewCount == overviewDataList.data.size) {
+                    overviewStatus = MalApiStatus.DONE
+                }
+            }
+        } catch (e: Exception) { }
+    }
+
+    fun addingBySeason(overviewData: OverviewData) {
+        try {
+            viewModelScope.launch {
+                Log.i("OverviewViewModel", "Adding season animes")
+                Log.i(TAG, overviewData.year)
+                Log.i(TAG, overviewData.season)
+
+                val animeResult = MalApi.retrofitService.getAnimeBySeasonYear(
+                    year = overviewData.year,
+                    season = overviewData.season,
+                    limit = 10,
+                    fields = POSTER_FIELDS
+                )
+                animeData.add(Pair(overviewData.title, animeResult.data))
+                overviewCount += 1
+                Log.i(TAG, overviewCount.toString())
+                // Seen all api calls, update overview screen
+                if (overviewCount == overviewDataList.data.size) {
+                    overviewStatus = MalApiStatus.DONE
+                }
+            }
+        } catch (e: Exception) { }
     }
 }

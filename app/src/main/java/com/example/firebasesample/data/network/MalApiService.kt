@@ -42,6 +42,15 @@ interface MalApiService {
         @Path("id") query: String,
         @Query("fields") fields: String
     ): Anime
+
+    @Headers("X-MAL-CLIENT-ID: ${BuildConfig.apiKey}")
+    @GET("anime/season/{year}/{season}")
+    suspend fun getAnimeBySeasonYear(
+        @Path("year") year: String,
+        @Path("season") season: String,
+        @Query("limit") limit: Int,
+        @Query("fields") fields: String
+    ) : AnimePosterResponse
 }
 
 /**
