@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
@@ -78,6 +79,7 @@ fun AnimeDetailsBody(
     userReviews: List<AnimeReview>,
     onClickRelatedAnime: (AnimeRelated) -> Unit,
     onClickRecommended: (AnimeRecommendation) -> Unit,
+    onClickDeleteComment: (AnimeReview, Int) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -107,11 +109,15 @@ fun AnimeDetailsBody(
 
             // Related anime row list
             item {
-                AnimeRelatedRow(title = "Related Animes", animes = anime.related_anime, onClickAnime = onClickRelatedAnime)
+                if (anime.related_anime.size > 0) {
+                    AnimeRelatedRow(title = "Related Animes", animes = anime.related_anime, onClickAnime = onClickRelatedAnime)
+                }
             }
             // Recommend Anime
             item {
-                AnimeRecommendedRow(title = "Recommended Animes", animes = anime.recommendations, onClickRecommended = onClickRecommended)
+                if (anime.recommendations.size > 0) {
+                    AnimeRecommendedRow(title = "Recommended Animes", animes = anime.recommendations, onClickRecommended = onClickRecommended)
+                }
             }
 
             item {
@@ -123,8 +129,8 @@ fun AnimeDetailsBody(
                     user = user
                 )
             }
-            items(userReviews) { review ->
-                Review(review)
+            itemsIndexed(userReviews) { index, review ->
+                Review(index, review, onClickDeleteComment)
             }
             item {
                 Spacer(modifier = Modifier.padding(140.dp)) // empty space below comment space
@@ -312,7 +318,7 @@ fun CreateReview(modifier: Modifier, onClickAddReview: (String, Int) -> Unit, nu
                         .focusRequester(focusRequester),
                     value = text,
                     onValueChange = { text = it },
-                    label = { Text("Add a comment...") }
+                    label = { Text("Write a review...") }
                 )
                 Spacer(modifier = Modifier.padding(4.dp))
                 Row(
@@ -332,7 +338,7 @@ fun CreateReview(modifier: Modifier, onClickAddReview: (String, Int) -> Unit, nu
                             focusManager.clearFocus() },
                         enabled = text.isNotBlank()
                     ) {
-                        Text("COMMENT")
+                        Text("REVIEW")
                     }
                 }
             }
@@ -342,7 +348,7 @@ fun CreateReview(modifier: Modifier, onClickAddReview: (String, Int) -> Unit, nu
 }
 
 @Composable
-fun Review(review: AnimeReview) {
+fun Review(index: Int, review: AnimeReview, onClickDeleteComment: (AnimeReview, Int) -> Unit) {
     Row(modifier = Modifier.padding(16.dp)) {
         AsyncImage(
             model = review.authorData.profileImage,
@@ -352,7 +358,7 @@ fun Review(review: AnimeReview) {
                 .clip(CircleShape)
         )
         Spacer(modifier = Modifier.padding(8.dp))
-        Column {
+        Column(Modifier.weight(1f)) {
             Row {
                 Text(
                     text = review.authorData.username,
@@ -366,6 +372,21 @@ fun Review(review: AnimeReview) {
             }
             Spacer(modifier = Modifier.padding(2.dp))
             Text(text = review.authorData.review)
+        }
+        var expanded by rememberSaveable { mutableStateOf(false) }
+        Row {
+            IconButton(onClick = { expanded = true }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "More")
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(onClick = { onClickDeleteComment(review, index) }
+                ) {
+                    Text("Delete comment")
+                }
+            }
         }
     }
     Divider(startIndent = 80.dp)

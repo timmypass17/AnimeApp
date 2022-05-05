@@ -25,7 +25,7 @@ class OverviewViewModel() : ViewModel() {
     var overviewDataList: OverviewDataList by mutableStateOf(OverviewDataList())
 
     var overviewStatus: MalApiStatus by mutableStateOf(MalApiStatus.LOADING)
-    var overviewCount: Int by mutableStateOf(0)
+    var overviewCount = 0
 
     init {
         Log.i(TAG, "Creating viewmodel")
@@ -105,6 +105,8 @@ class OverviewViewModel() : ViewModel() {
                 // Seen all api calls, update overview screen
                 if (overviewCount == overviewDataList.data.size) {
                     overviewStatus = MalApiStatus.DONE
+                    // sort anime data by ordering
+                    // TODO
                 }
             }
         } catch (e: Exception) { }

@@ -248,4 +248,43 @@ class AnimeDetailsViewModel() : ViewModel() {
             }
             .addOnFailureListener { e -> }
     }
+
+    // secretly update
+    fun deleteComment(animeReview: AnimeReview, index: Int) {
+        val db = Firebase.firestore
+        val docRef = db.document("reviews/${animeReview.animeData.node.id}")
+
+        docRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                // Get current reviews
+                val reviewDocument = documentSnapshot.toObject<AnimeReviews>()
+                val updatedReviews = reviewDocument?.reviews
+                updatedReviews?.removeAt(index)
+                reviews = updatedReviews!!
+                docRef
+                    .update("reviews", updatedReviews)
+                    .addOnSuccessListener { deleteCommentFromUser(animeReview) }
+                    .addOnFailureListener { }
+            }
+            .addOnFailureListener {  }
+    }
+
+    fun deleteCommentFromUser(animeReview: AnimeReview) {
+        val db = Firebase.firestore
+        val docRef = db.document("users/${animeReview.authorData.author}") // get current user path
+
+        docRef
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                val userDocument = documentSnapshot.toObject<User>()
+                val reviewsToUpdate = userDocument?.animeReviews
+                reviewsToUpdate?.remove(animeReview.animeData.node.id)  // remove review from user's review
+                docRef
+                    .update("animeReviews", reviewsToUpdate)
+                    .addOnSuccessListener {  }
+                    .addOnFailureListener {  }
+            }
+            .addOnFailureListener {  }
+    }
 }

@@ -81,7 +81,6 @@ fun OverviewBody(
 @Composable
 fun AnimeRow(title: String, animes: List<AnimePosterNode>,
              onClickAnime: (AnimePosterNode) -> Unit,
-
 ) {
     Column {
         Row(
@@ -102,7 +101,7 @@ fun AnimeRow(title: String, animes: List<AnimePosterNode>,
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(270.dp),
+                .height(280.dp),
             contentPadding = PaddingValues(start = 2.dp, end = 2.dp)
             ) {
             items(animes) { anime ->
@@ -183,8 +182,8 @@ fun AnimePoster(url: String) {
             .build(),
         contentDescription = null,
         modifier = Modifier
-            .height(175.dp)
-            .width(250.dp)
+            .height(180.dp)
+            .width(240.dp)
             .background(Color.LightGray),
         contentScale = ContentScale.FillHeight
     )

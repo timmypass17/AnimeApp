@@ -47,19 +47,35 @@ data class AnimeSeason(
     )
 }
 
+data class AnimeSearchResponse(
+    val data: List<AnimeSearchResponseNode>
+) {
+    constructor() : this (
+        data = listOf()
+            )
+}
+
+data class AnimeSearchResponseNode(
+    val node: Anime
+) {
+    constructor() : this (
+        node = Anime()
+            )
+}
+
 // Full anime object
 data class Anime(
     val id: String,
     val title: String,
     val main_picture: AnimePicture,
-    val start_season: AnimeSeason,
+    val start_season: AnimeSeason = AnimeSeason(),
     val synopsis: String,
     val num_episodes: String,
-    val related_anime: List<AnimeRelated>,
-    val recommendations: List<AnimeRecommendation>,
-    val start_date: String,
+    val related_anime: List<AnimeRelated> = listOf(),
+    val recommendations: List<AnimeRecommendation> = listOf(),
+    val start_date: String = "",
     val end_date: String?,
-    val genres: List<AnimeGenre>
+    val genres: List<AnimeGenre> = listOf()
 ) {
     constructor() : this (
         id = "",

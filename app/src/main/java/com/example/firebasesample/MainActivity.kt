@@ -2,6 +2,7 @@ package com.example.firebasesample
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.SearchView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -26,6 +27,8 @@ import com.example.firebasesample.ui.overview.OverviewBody
 import com.example.firebasesample.ui.overview.OverviewViewModel
 import com.example.firebasesample.ui.profile.ProfileBody
 import com.example.firebasesample.ui.profile.ProfileViewModel
+import com.example.firebasesample.ui.search.SearchScreen
+import com.example.firebasesample.ui.search.SearchViewModel
 import com.example.firebasesample.ui.signup.SignUpBody
 import com.example.firebasesample.ui.signup.SignUpViewModel
 import com.example.firebasesample.ui.theme.FirebaseSampleTheme
@@ -43,6 +46,7 @@ class MainActivity : ComponentActivity() {
     val overviewViewModel by viewModels<OverviewViewModel>()
     val animeDetailsViewModel by viewModels<AnimeDetailsViewModel>()
     val profileViewModel by viewModels<ProfileViewModel>()
+    val searchViewModel by viewModels<SearchViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +56,8 @@ class MainActivity : ComponentActivity() {
                 signUpViewModel = signupViewModel,
                 overviewViewModel = overviewViewModel,
                 animeDetailsViewModel = animeDetailsViewModel,
-                profileViewModel = profileViewModel
+                profileViewModel = profileViewModel,
+                searchViewModel = searchViewModel
             )
         }
     }
@@ -65,7 +70,8 @@ fun FirebaseSampleApp(
     signUpViewModel: SignUpViewModel,
     overviewViewModel: OverviewViewModel,
     animeDetailsViewModel: AnimeDetailsViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    searchViewModel: SearchViewModel
 ) {
     // TODO: Show bottom nav in some screens
     // https://stackoverflow.com/questions/66837991/hide-top-and-bottom-navigator-on-a-specific-screen-inside-scaffold-jetpack-compo
@@ -78,7 +84,7 @@ fun FirebaseSampleApp(
         )
         Scaffold(
             bottomBar = {
-                if (currentScreen == SampleScreen.Overview || currentScreen == SampleScreen.Profile ) {
+                if (currentScreen != SampleScreen.Login || currentScreen != SampleScreen.SignUp) {
                     OverviewTabRow(
                         allScreens = bottomNavScreens,
                         onTabSelected = { screen -> navController.navigate(screen.name) },
@@ -94,7 +100,8 @@ fun FirebaseSampleApp(
                 signUpViewModel = signUpViewModel,
                 overviewViewModel = overviewViewModel,
                 animeDetailsViewModel = animeDetailsViewModel,
-                profileViewModel = profileViewModel
+                profileViewModel = profileViewModel,
+                searchViewModel = searchViewModel
             )
         }
     }
@@ -109,7 +116,8 @@ fun FirebaseSampleNavHost(
     signUpViewModel: SignUpViewModel,
     overviewViewModel: OverviewViewModel,
     animeDetailsViewModel: AnimeDetailsViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    searchViewModel: SearchViewModel
 ) {
     val isLoggedIn = loginViewModel.isLoggedIn
     NavHost(
@@ -188,7 +196,8 @@ fun FirebaseSampleNavHost(
                     animeDetailsViewModel.getUserRatings(animeRecommendation.node.id)
                     profileViewModel.getCurrentUser()
                     navController.navigate("AnimeDetails/${animeRecommendation.node.id}")
-                }
+                },
+                onClickDeleteComment = animeDetailsViewModel::deleteComment
             )
         }
 
@@ -214,6 +223,25 @@ fun FirebaseSampleNavHost(
                     navController.navigate(SampleScreen.Overview.name) {
                         popUpTo(SampleScreen.Overview.name) { inclusive = true } // pop off everything up to overview screen
                     }
+                },
+                onClickReview = { animeReview ->
+                    animeDetailsViewModel.getAnime(animeReview.animeData.node.id)
+                    animeDetailsViewModel.getUserRatings(animeReview.animeData.node.id)
+                    navController.navigate("AnimeDetails/${animeReview.animeData.node.id}")
+                }
+            )
+        }
+
+        composable(SampleScreen.Search.name) {
+            SearchScreen(
+                animeData =  searchViewModel.animeSearchResults,
+                onClickSearch = searchViewModel::getAnimeByName,
+                onClickAnime = { anime ->
+                    // When user clicks on poster, fetch "One Piece" data and navigate to details
+                    animeDetailsViewModel.getAnime(anime.id)
+                    animeDetailsViewModel.getUserRatings(anime.id)
+                    profileViewModel.getCurrentUser()
+                    navController.navigate("AnimeDetails/${anime.id}")
                 }
             )
         }

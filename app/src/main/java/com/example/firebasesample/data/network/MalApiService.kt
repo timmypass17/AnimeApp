@@ -3,6 +3,7 @@ package com.example.firebasesample.data.network
 import com.example.firebasesample.BuildConfig
 import com.example.firebasesample.data.models.Anime
 import com.example.firebasesample.data.models.AnimePosterResponse
+import com.example.firebasesample.data.models.AnimeSearchResponse
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Retrofit
@@ -51,6 +52,14 @@ interface MalApiService {
         @Query("limit") limit: Int,
         @Query("fields") fields: String
     ) : AnimePosterResponse
+
+    @Headers("X-MAL-CLIENT-ID: ${BuildConfig.apiKey}")
+    @GET("anime")
+    suspend fun getAnimeByName(
+        @Query("q") title: String,
+        @Query("limit") limit: Int,
+        @Query("fields") fields: String
+    ) : AnimeSearchResponse
 }
 
 /**
